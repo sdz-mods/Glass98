@@ -1,0 +1,29 @@
+Glass98 A00
+
+Glass98 project source, scripts, HTML/CSS/JScript, documentation and the
+bundled solid teal wallpaper are provided under the MIT License. See LICENSE
+in the source repository, or LICENSE.TXT in the installation package.
+
+OPEN WATCOM RUNTIME
+The native executables are built with Open Watcom 2.0 and contain portions
+of its unmodified runtime/startup libraries. Those portions retain their
+upstream copyrights and the Sybase Open Watcom Public License version 1.0;
+they are not relicensed under MIT.
+Portions Copyright (c) 1983-2002 Sybase, Inc. All Rights Reserved.
+Additional portions copyright the Open Watcom contributors.
+
+Open Watcom source is available under that license at:
+https://github.com/open-watcom/open-watcom-v2
+Runtime source: https://github.com/open-watcom/open-watcom-v2/tree/master/bld/clib
+Full license: licenses/WATCOM.TXT in source; WATCOM.TXT in the package.
+
+The runtime portions are provided AS IS, without warranty of any kind.
+Sybase and the Open Watcom contributors disclaim all warranties and liability
+as set out in WATCOM.TXT. Glass98's MIT grant applies to Glass98's own work
+only; no additional promises are made on behalf of those parties.
+
+EXTERNAL SOFTWARE
+Windows, Internet Explorer, Winamp and the Open Watcom compiler distribution
+are not included in the source repository or installation package. They retain
+their respective licenses. Windows and Internet Explorer are runtime
+prerequisites; Winamp is an optional integration. The compiler is a build tool.

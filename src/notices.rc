@@ -1,0 +1,10 @@
+/* Embedded source-availability notice for the statically linked runtime. */
+1 RCDATA
+BEGIN
+ "Glass98: MIT License. See LICENSE.TXT.\0",
+ "Open Watcom runtime portions: Sybase Open Watcom Public License 1.0.\0",
+ "Portions Copyright (c) 1983-2002 Sybase, Inc. All Rights Reserved.\0",
+ "Additional portions copyright Open Watcom contributors.\0",
+ "Runtime source available under that license: https://github.com/open-watcom/open-watcom-v2/tree/master/bld/clib\0",
+ "See NOTICE.TXT and WATCOM.TXT.\0"
+END

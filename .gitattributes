@@ -1,0 +1,10 @@
+* text=auto
+*.md text eol=lf
+*.c text eol=crlf
+*.h text eol=crlf
+*.htm text eol=crlf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Preserve the upstream license text verbatim.
+licenses/WATCOM.TXT -whitespace

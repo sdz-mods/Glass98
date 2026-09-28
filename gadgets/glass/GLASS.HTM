@@ -1,0 +1,441 @@
+<html><head><title>Glass98</title><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<style type="text/css">
+body {
+    margin: 0;
+    background: #0b1820;
+    color: white;
+    font: 11px Tahoma, Arial;
+    overflow: hidden
+}
+
+#backdrop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden
+}
+
+#wallpaper {
+    position: absolute;
+    display: none
+}
+
+#widgets {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%
+}
+
+.widget {
+    overflow: hidden;
+    position: absolute;
+    width: 280px
+}
+
+.tint {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 300px;
+    background: black;
+}
+
+.content {
+    position: relative;
+    width: 280px;
+    border: 1px solid #80ffff;
+    overflow: hidden
+}
+
+.handle {
+    display: block;
+    line-height: 16px;
+    padding: 9px 11px 0;
+    cursor: move;
+    font-size: 13px;
+    font-weight: bold;
+    color: #80ffff;
+    text-decoration: none
+}
+
+.inside {
+    padding: 9px 11px
+}
+
+.bodyflow {
+    word-wrap: break-word;
+    zoom: 1
+}
+
+.section {
+    padding-top: 9px
+}
+
+.first {
+    padding-top: 0
+}
+
+.label {
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 4px
+}
+
+.detail {
+    font-size: 11px;
+    line-height: 15px
+}
+
+.muted {
+    font-size: 10px;
+    line-height: 14px
+}
+
+.meter {
+    position: relative;
+    height: 13px;
+    margin: 3px 0 5px;
+    padding-right: 39px
+}
+
+.track {
+    height: 8px;
+    border: 1px solid #608080;
+    overflow: hidden
+}
+
+.fill {
+    height: 6px;
+    background: #80ffff
+}
+
+.percent {
+    position: absolute;
+    right: 0;
+    top: -2px;
+    width: 36px;
+    text-align: right;
+    font-weight: bold
+}
+
+a {
+    color: #80ffff
+}
+
+input,
+select,
+textarea,
+button {
+    font: 11px Tahoma
+}
+
+.buttons a {
+    display: inline-block;
+    padding: 3px;
+    text-decoration: none;
+    border: 1px solid #507078;
+    margin: 3px 3px 0 0
+}
+
+.empty {
+    padding: 5px 0;
+    line-height: 15px
+}
+
+#toolbar {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    z-index: 100
+}
+
+#toolbar a {
+    padding: 1px 2px;
+    color: white;
+    background: #15323b;
+    font-size: 10px
+}
+
+#manager {
+    display: none;
+    width: 370px;
+    padding: 14px;
+    background: #15323b
+}
+
+#manager h3 {
+    font-size: 18px;
+    margin: 0 0 5px
+}
+
+#manager p {
+    margin: 7px 0
+}
+
+#manager input.color {
+    width: 94px
+}
+
+#manager input.num {
+    width: 43px
+}
+
+#manager select {
+    max-width: 330px
+}
+
+#manager .wide {
+    width: 330px
+}
+
+#manager textarea {
+    width: 328px;
+    height: 70px
+}
+
+#manager .help {
+    color: #a9c4ca;
+    font-size: 10px;
+    line-height: 14px
+}
+
+#manager button {
+    padding: 3px 8px
+}
+
+#manager .tabs {
+    margin: 12px 0 10px;
+    border-bottom: 1px solid #507078
+}
+
+#manager .tab {
+    border: 1px solid #507078;
+    background: #102930;
+    color: #bdd3d8;
+    padding: 6px 16px;
+    margin-right: 4px
+}
+
+#manager .active {
+    background: #2a505a;
+    color: white
+}
+
+#manager table {
+    font: 11px Tahoma, Arial
+}
+
+#manager .formrows {
+    width: 100%;
+    border-collapse: collapse
+}
+
+#manager .formrows td {
+    padding: 5px 0
+}
+
+#manager .formlabel {
+    width: 105px;
+    color: #c8dce0
+}
+
+#manager .palette {
+    width: 100%
+}
+
+#manager .palette td {
+    width: 33%;
+    padding: 3px 0
+}
+
+#manager .palette label {
+    display: block;
+    margin-bottom: 5px;
+    color: #c8dce0
+}
+
+#manager .shortcutsetup {
+    border-bottom: 1px solid #36515a;
+    padding: 8px 0;
+    word-wrap: break-word
+}
+
+#manager .shortcutsetup input {
+    width: 265px;
+    margin-bottom: 5px
+}
+
+#manager .shortcutsetup span {
+    display: block;
+    word-wrap: break-word;
+    font-size: 10px;
+    color: #b9cfd4
+}
+
+#manager .footer {
+    border-top: 1px solid #507078;
+    padding-top: 10px;
+    margin-top: 12px
+}
+
+#notice {
+    margin-top: 8px;
+    line-height: 15px;
+    color: #bde4e4
+}
+
+fieldset {
+    border: 1px solid #507078;
+    margin: 10px 0;
+    padding: 9px
+}
+
+legend {
+    color: #80ffff;
+    padding: 0 5px
+}
+
+.calendar {
+    table-layout: fixed;
+    width: 100%;
+    text-align: center;
+    font-size: 11px
+}
+
+.calendar td {
+    width: 14%;
+    padding: 3px 0
+}
+
+.notes {
+    word-wrap: break-word;
+    overflow: hidden
+}
+
+.notes .detail {
+    padding-top: 6px
+}
+
+.launchrow {
+    line-height: 15px;
+    padding: 1px 0
+}
+
+.launchfile {
+    color: #b7cbd0;
+    font-size: 10px;
+    margin-left: 7px
+}
+
+.today {
+    border: 1px solid #80ffff;
+    font-weight: bold
+}
+
+.graph {
+    overflow: hidden;
+    height: 48px;
+    position: relative;
+    border-bottom: 1px solid #507078;
+    margin: 4px 0
+}
+
+.digital {
+    font-size: 30px;
+    line-height: 36px;
+    text-align: center;
+    padding: 0
+}
+
+.dial {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 6px auto
+}
+</style>
+<style type="text/css">
+/* Keep local time centered in the main clock area; world clocks follow below. */
+#w3 .handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    width: 100%
+}
+
+.clockface {
+    height: 62px;
+    line-height: 62px
+}
+</style>
+<link rel="stylesheet" href="MANAGER.CSS?v=@@VERSION@@">
+<script src="MANAGER.JS?v=@@VERSION@@"></script><script src="PLACEMENT.JS?v=@@VERSION@@"></script>
+<script language="JScript">
+var layoutReflow = 0,
+    layoutResolution = '',
+    layoutWorkWidth = 0,
+    layoutWorkHeight = 0,
+    layoutHidden = '';
+var actionAck = '',
+    ackTime = 0,
+    ackOK = 0,
+    snapshot = null,
+    sampleTime = 0,
+    extraTime = 0,
+    inventoryTime = 0,
+    hardware = {},
+    battery = {},
+    drives = [],
+    networks = [],
+    hostName = '',
+    mixer = [],
+    winamp = {},
+    cdState = '',
+    actionStatus = '',
+    rssItems = [],
+    rssStatus = 'No feed configured',
+    rssTime = 0,
+    savedLayout = '',
+    savedWallpaper = 'WALL.BMP',
+    savedOptions = {},
+    settingsURL = 'SETTINGS.HTM';
+</script>
+<script src="THEMES.JS?v=@@VERSION@@"></script><script src="ADDONS.JS?v=@@VERSION@@"></script><script id="feed" src="DATA.JS"></script><script id="extra" src="EXTRA.JS"></script><script id="prefs" src="PREFS.JS"></script><script id="ackfeed" src="ACK.JS"></script><script id="rssfeed" src="RSS.JS"></script>
+</head><body scroll="no">
+<iframe id="commandSink" name="commandSink" src="about:blank" style="position:absolute;left:-100px;top:-100px;width:1px;height:1px"></iframe>
+<div id="backdrop"><img id="wallpaper"></div><div id="widgets"></div>
+<div id="toolbar"><span id="layoutNotice"></span><a href="#" onclick="openManager();return false">Manage widgets</a></div>
+<div id="manager"><div id="managerHeader"><h3>Glass98 <span id="stackVersion">@@VERSION@@</span></h3><div class="help" id="profileHint">Your desktop, your way.</div>
+<div class="tabs"><button id="widgetTabButton" onclick="showTab('widget')">Widgets</button><button id="desktopTabButton" onclick="showTab('desktop')">Desktop</button><button id="themesTabButton" onclick="showTab('themes')">Themes</button></div>
+</div><div id="managerBody"><div id="widgetTab"><div id="widgetList"></div><div id="widgetEditor"><h3 id="widgetTitle">System</h3>
+<table class="formrows"><tr id="widgetPicker"><td class="formlabel">Widget</td><td><select id="target" onchange="loadWidget()"></select></td></tr><tr><td class="formlabel">Visibility</td><td><label><input id="enabled" type="checkbox"> Show on desktop</label></td></tr>
+<tr><td class="formlabel">Refresh interval</td><td><input id="seconds" class="num"> seconds</td></tr></table><div id="refreshHint" class="help"></div><div id="widgetFitHint" class="help"></div>
+<fieldset><legend>Appearance</legend><table class="palette"><tr><td><label>Background</label>#<input id="bg" class="color" maxlength="6"></td><td><label>Text</label>#<input id="fg" class="color" maxlength="6"></td><td><label>Accent</label>#<input id="accent" class="color" maxlength="6"></td></tr></table>
+<p>Background opacity <input id="alpha" class="num"> %</p><div id="opacityHint" class="help" style="display:none">Transparency is disabled on the Desktop tab. Your opacity is saved for when you enable it again.</div><label><input id="allColors" type="checkbox"> Apply these colors to all widgets</label></fieldset>
+<fieldset id="specificBox"><legend>Widget options</legend><div id="specific"></div></fieldset>
+</div>
+</div><div id="desktopTab"><h3>Desktop</h3><div class="help">Layout, wallpaper and shared refresh settings.</div>
+<fieldset><legend>Layout</legend><table class="formrows"><tr><td class="formlabel">Shared width</td><td><input id="width" class="num"> pixels (240-600)</td></tr></table><p><label><input id="snap" type="checkbox"> Snap edges</label> <label><input id="locked" type="checkbox"> Lock positions</label></p></fieldset>
+<fieldset><legend>Rendering</legend><p><label><input id="disableAlpha" type="checkbox"> Disable transparency (opaque widgets)</label></p><div class="help">Use solid backgrounds for slower systems. Removes alpha blending; keeps your saved opacity settings. Applies to all widgets and the theme preview.</div></fieldset>
+<fieldset><legend>Global refresh</legend><p><label><input id="useGlobal" type="checkbox"> Override all widget intervals</label></p><p>Refresh every <input id="globalSeconds" class="num"> seconds (1-3600)</p><div class="help">Uncheck to use each widget's own interval. Controls respond immediately in either mode.</div></fieldset>
+<fieldset><legend>Wallpaper</legend><select id="wallmode"><option>Center</option><option>Tile</option><option>Stretch</option><option>Fit</option></select> <button id="chooseWallpaper" onclick="applySettings('browse')">Choose image...</button></fieldset>
+</div>
+<div id="themesTab" style="display:none"><h3>Themes</h3><div class="help">Theme buttons apply immediately. Use Previous appearance to undo a change.</div><div id="themeControls">
+<fieldset><legend>From your wallpaper</legend><div id="autoImage" class="help" style="word-wrap:break-word"></div><p>Style <select id="autoStyle"><option value="0">Automatic</option><option value="1">Dark panels</option><option value="2">Light panels</option></select></p><p><label><input id="autoFollow" type="checkbox"> Regenerate when I choose a new wallpaper</label></p><button onclick="themeGenerate()">Generate and apply</button> <button onclick="themeUnfollow()">Stop following</button><p id="autoResult" class="help"></p><p class="help">Uses your Desktop wallpaper. BMP/JPEG/GIF, up to 16 MiB and 12 megapixels. Save a named copy below to keep the result.</p></fieldset>
+<fieldset><legend>Themes</legend><div id="themeCurrent" class="help"></div><p><select id="themeChoice" class="wide"></select></p><button onclick="themeApply()">Apply theme</button><p class="help">Changes colors and opacity; keeps your widgets and layout.</p></fieldset>
+</div><div id="themeVisual"><fieldset><legend>Desktop preview</legend><div id="themePreview"><div id="previewTint"></div><div id="previewContent"><b id="previewTitle">System</b><div class="previewLabel">CPU</div><div class="previewTrack"><div id="previewCPU"></div></div><div class="previewDetail">42% usage &nbsp; / &nbsp; Example processor</div><div class="previewLabel">MEMORY</div><div class="previewTrack"><div id="previewRAM"></div></div><div class="previewDetail">64 MB used / 128 MB total</div></div></div><p class="help">Applied panel appearance with the meter colors below. Example values.</p></fieldset><fieldset><legend>Meter colors</legend><p><label><input id="meterColors" type="checkbox" onclick="updateThemePreview()"> Color meters by level</label></p><table class="palette"><tr><td><label>Low / healthy</label>#<input id="meterLow" class="color" maxlength="6" onchange="updateThemePreview()"></td><td><label>Middle</label>#<input id="meterMid" class="color" maxlength="6" onchange="updateThemePreview()"></td><td><label>High / critical</label>#<input id="meterHigh" class="color" maxlength="6" onchange="updateThemePreview()"></td></tr></table><table cellspacing="0" cellpadding="0" style="width:264px;height:13px"><tr><td id="palette0" style="width:24px">&nbsp;</td><td id="palette1" style="width:24px">&nbsp;</td><td id="palette2" style="width:24px">&nbsp;</td><td id="palette3" style="width:24px">&nbsp;</td><td id="palette4" style="width:24px">&nbsp;</td><td id="palette5" style="width:24px">&nbsp;</td><td id="palette6" style="width:24px">&nbsp;</td><td id="palette7" style="width:24px">&nbsp;</td><td id="palette8" style="width:24px">&nbsp;</td><td id="palette9" style="width:24px">&nbsp;</td><td id="palette10" style="width:24px">&nbsp;</td></tr></table><p class="help">Low / healthy to high / critical. Battery and free resources use the reverse scale.</p><button onclick="themeMeters()">Apply meter colors</button></fieldset>
+</div><div class="managerClear"></div><fieldset><legend>Save and manage themes</legend><p>Name <input id="themeName" maxlength="32" class="wide"></p><button onclick="themeSave(false)">Save current as new</button><p><button onclick="themeSave(true)">Replace selected</button> <button onclick="themeDelete()">Delete selected</button></p><p class="help">Saves applied widget appearance and these meter colors. Up to 16 named themes.</p></fieldset>
+</div>
+</div><div id="managerFooter" class="footer"><button id="applyButton" onclick="applySettings('save')">Apply</button> <button id="arrangeButton" onclick="resetLayout()">Arrange widgets</button> <button onclick="safeClose()">Close</button><div id="notice">Changes apply to the selected widget.</div></div>
+</div>
+<script>
+var settingsView = location.search == '?settings';
+</script><script id="pingfeed" src="PING.JS"></script><script src="WIDGETS.JS?v=@@VERSION@@"></script>
+</body></html>

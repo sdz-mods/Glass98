@@ -1,0 +1,11 @@
+/tools/
+/vm/
+/build/
+/dist/
+*.obj
+*.err
+*.map
+*.exe
+*.dll
+*.ocx
+*.pdb

@@ -1,0 +1,112 @@
+<html>
+<head><title>Glass98 System</title><meta http-equiv="refresh" content="2">
+<style type="text/css">
+body {
+    margin: 0;
+    padding: 8px;
+    background: #c0c0c0;
+    color: #000;
+    font: 12px Tahoma, Arial, sans-serif;
+}
+
+.panel {
+    border: 2px outset #eee;
+    padding: 7px;
+}
+
+.title {
+    background: #000080;
+    color: white;
+    font-weight: bold;
+    padding: 4px;
+    margin-bottom: 10px;
+}
+
+.label {
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+.value {
+    font-size: 24px;
+    margin: 3px 0;
+}
+
+.detail {
+    font-size: 11px;
+    line-height: 16px;
+}
+
+input,
+textarea {
+    background: #c0c0c0;
+    color: #000;
+    border: 0;
+    width: 210px;
+    padding: 0;
+    font: 11px Tahoma, Arial, sans-serif;
+    overflow: hidden;
+}
+
+.status {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #404040;
+}
+</style></head>
+<body><div class="panel">
+<div class="title">SYSTEM MONITOR</div>
+<div class="label">CPU</div><input class="value" id="cpu" readonly value="N/A">
+<textarea id="model" rows="2" readonly>Processor information unavailable</textarea>
+<textarea id="cpuDetails" rows="2" readonly></textarea>
+<div class="label">PHYSICAL MEMORY</div><input class="value" id="ram" readonly value="N/A">
+<textarea id="memory" rows="3" readonly>Memory statistics unavailable</textarea>
+<textarea class="status" id="status" rows="2" readonly>Loading local snapshot...</textarea>
+</div>
+<script language="JScript">
+var snapshot = null,
+    sampleTime = 0;
+document.write('<script language="JScript" src="DATA.JS?v=' + (new Date()).getTime() + '"><' + '/script>');
+</script>
+<script language="JScript">
+function unavailable(message) {
+    document.all.cpu.value = "N/A";
+    document.all.ram.value = "N/A";
+    document.all.model.value = "Processor information unavailable";
+    document.all.cpuDetails.value = "";
+    document.all.memory.value = "Memory statistics unavailable";
+    document.all.status.value = message;
+}
+
+function mb(kb) {
+    return (Math.round(Number(kb) / 1024 * 10) / 10) + " MB";
+}
+
+function render() {
+    try {
+        if (snapshot == null || Math.abs((new Date()).getTime() - sampleTime) > 10000) {
+            unavailable("Telemetry unavailable / waiting for helper");
+            return;
+        }
+        var fields = String(snapshot).split("|");
+        if (fields.length != 14 && fields.length != 16) throw new Error("Invalid snapshot");
+        var cpu = Number(fields[0]),
+            total = Number(fields[2]),
+            available = Number(fields[3]);
+        if (!(total > 0) || !(available >= 0) || available > total) throw new Error("Invalid memory data");
+        var used = total - available,
+            percent = Math.round(used / total * 100);
+        document.all.cpu.value = cpu >= 0 && cpu <= 100 ? cpu + "%" : "N/A";
+        document.all.model.value = fields[8];
+        document.all.cpuDetails.value = "Family " + fields[10] + " / model " + fields[11] +
+            " / stepping " + fields[12] + "\nOS processors: " + fields[13];
+        document.all.ram.value = percent + "%";
+        document.all.memory.value = mb(used) + " used / " + mb(total) + " total\n" +
+            mb(available) + " available\nWindows memory load: " + fields[1] + "%";
+        document.all.status.value = cpu >= 0 ? "Live / refresh 2 seconds" : "Live RAM / CPU unavailable or warming up";
+    } catch (e) {
+        unavailable("Telemetry unavailable / waiting for helper");
+    }
+}
+render();
+</script></body></html>

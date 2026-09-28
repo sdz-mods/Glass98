@@ -1,0 +1,336 @@
+/* IE6: sizes and pinned regions are set by managerResize, without CSS expressions. */
+#manager {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0;
+    background: #132b34;
+    font: 12px Tahoma, Arial;
+    overflow: hidden
+}
+
+#managerHeader {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 16px 18px 0;
+    background: #193943
+}
+
+#manager h3 {
+    font-size: 19px;
+    margin: 0 0 6px;
+    color: #eef8fa
+}
+
+#manager .help {
+    font-size: 11px;
+    line-height: 16px;
+    color: #b4cbd1
+}
+
+#manager .tabs {
+    margin: 12px 0 0;
+    border: 0
+}
+
+#manager .tab {
+    padding: 7px 20px;
+    margin: 0 5px 0 0;
+    font-size: 12px
+}
+
+#manager .active {
+    background: #315e69;
+    border-bottom-color: #315e69
+}
+
+#managerBody {
+    position: absolute;
+    left: 0;
+    overflow: auto;
+    padding: 16px 18px;
+    background: #132b34
+}
+
+#managerFooter {
+    position: absolute;
+    left: 0;
+    margin: 0;
+    padding: 10px 18px;
+    background: #193943;
+    border-top: 1px solid #42636d
+}
+
+#managerFooter button {
+    margin-right: 6px;
+    min-width: 75px
+}
+
+#manager #notice {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 16px;
+    color: #d6e9ed
+}
+
+#manager button,
+#manager input,
+#manager select,
+#manager textarea {
+    font: 12px Tahoma, Arial
+}
+
+#manager button {
+    padding: 4px 9px;
+    cursor: pointer
+}
+
+#manager input.color {
+    width: 76px
+}
+
+#manager input.num {
+    width: 48px
+}
+
+#manager table {
+    font: 12px Tahoma, Arial
+}
+
+#manager .formlabel {
+    width: 120px
+}
+
+#manager .formrows td {
+    padding: 6px 0
+}
+
+#manager fieldset {
+    margin: 14px 0;
+    padding: 12px;
+    border-color: #42636d
+}
+
+#manager legend {
+    color: #c0e9e8;
+    font-weight: bold
+}
+
+#manager .wide,
+#manager textarea {
+    width: 96%
+}
+
+#manager textarea {
+    height: 90px
+}
+
+#manager p {
+    margin: 9px 0;
+    line-height: 17px
+}
+
+#manager select {
+    max-width: none
+}
+
+#widgetTab {
+    position: relative
+}
+
+#widgetList {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 170px;
+    background: #0e222a;
+    padding: 6px 0;
+    overflow: auto
+}
+
+#widgetList a {
+    display: block;
+    padding: 7px 10px;
+    color: #bccfd5;
+    text-decoration: none;
+    border-left: 3px solid #0e222a
+}
+
+#widgetList a.selected {
+    background: #315e69;
+    color: white;
+    border-left-color: #8cdbd5
+}
+
+#widgetList a:hover {
+    background: #244854;
+    color: white
+}
+
+#widgetList .visibility {
+    float: right;
+    font-size: 10px;
+    color: #94b7bd
+}
+
+#widgetEditor {
+    position: absolute;
+    top: 0;
+    overflow: auto;
+    padding-right: 12px
+}
+
+#themeControls {
+    float: left;
+    width: 49%
+}
+
+#themeVisual {
+    float: right;
+    width: 48%
+}
+
+.managerClear {
+    clear: both;
+    height: 1px;
+    overflow: hidden
+}
+
+#manager .shortcutsetup {
+    padding: 8px 0;
+    border-bottom: 1px solid #36515a
+}
+
+#manager .shortcutsetup input {
+    width: 78%;
+    margin: 0 0 3px
+}
+
+#manager .shortcutsetup span {
+    padding: 2px 0 5px;
+    font-size: 11px
+}
+
+#manager .shortcutsetup button {
+    padding: 2px 8px;
+    font-size: 11px
+}
+
+#manager .shortcutrow {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse
+}
+
+#manager .shortcutrow td {
+    vertical-align: top
+}
+
+#manager .shortcutinfo {
+    width: 60%;
+    padding-right: 10px
+}
+
+#manager .shortcutactions {
+    width: 40%
+}
+
+#manager .shortcutactions button {
+    margin: 0 3px 4px 0
+}
+
+#manager .shortcutsetup input {
+    width: 85%
+}
+
+#manager.compact .shortcutinfo {
+    width: 65%
+}
+
+#manager.compact .shortcutactions {
+    width: 35%
+}
+
+#themePreview {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: #28434b
+}
+
+#previewTint {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 180px
+}
+
+#previewContent {
+    position: relative;
+    padding: 13px;
+    border: 1px solid #80ffff;
+    height: 180px
+}
+
+#previewTitle {
+    font-size: 14px
+}
+
+.previewLabel {
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin: 15px 0 6px;
+    font-weight: bold
+}
+
+.previewTrack {
+    height: 8px;
+    border: 1px solid #68818b;
+    font-size: 0;
+    line-height: 0
+}
+
+#previewCPU,
+#previewRAM {
+    height: 6px;
+    width: 42%;
+    background: #80ffff;
+    font-size: 0;
+    line-height: 0
+}
+
+#previewRAM {
+    width: 50%
+}
+
+.previewDetail {
+    font-size: 11px;
+    padding-top: 6px
+}
+
+#manager.compact #widgetList {
+    display: none
+}
+
+#manager.compact #themeControls,
+#manager.compact #themeVisual {
+    float: none;
+    width: 100%
+}
+
+#manager.compact #managerHeader {
+    padding-top: 10px
+}
+
+#manager #chooseWallpaper {
+    margin-left: 10px
+}
+
+#stackVersion {
+    font-size: 11px;
+    font-weight: normal;
+    color: #b4cbd1;
+    margin-left: 10px
+}
