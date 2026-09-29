@@ -434,3 +434,8 @@ run("cdInfo.album='Known album';cdInfo.title='Known track'");
 assert.doesNotMatch(run('cdDescription()'), /Disc not found/);
 run("cdInfo.id='bad/id'");
 assert.equal(run('cdEditButton()'), '');
+
+run("extraTime=Date.now();cdState='playing';cdTrack=8;cdTracks=8;render(9)");
+assert.match(elements.flow9.innerHTML, /device\/cd\/prev/);
+assert.match(elements.flow9.innerHTML, /device\/cd\/next/);
+console.log('PASS: CD previous and next controls');

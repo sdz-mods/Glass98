@@ -379,7 +379,7 @@ static int perform_action(const char *s)
     char tail, command[100], mode[40], drive;
     HWND w;
     DWORD error;
-    unsigned int track;
+    unsigned int track, total;
     if (sscanf(s, "volume/%d/%d/%d%c", &channel, &mute, &value, &tail) == 3 && channel >= 0 && channel < 4 && mute >= 0 &&
             mute <= 1 && value >= 0 && value <= (mute ? 1 : 100))
     {
@@ -445,11 +445,31 @@ static int perform_action(const char *s)
                 strcpy(command, "stop w98cd");
             else if (!strcmp(s + 3, "eject"))
                 strcpy(command, "set w98cd door open");
-            else if (!strcmp(s + 3, "next"))
+            else if (!strcmp(s + 3, "next") || !strcmp(s + 3, "prev"))
             {
-                if (mciSendStringA("status w98cd current track", mode, sizeof(mode), NULL))
+                error = mciSendStringA("status w98cd number of tracks", mode, sizeof(mode), NULL);
+                if (error)
+                {
+                    mciGetErrorStringA(error, actionStatus, sizeof(actionStatus));
                     return 0;
-                track = atoi(mode) + 1;
+                }
+                total = atoi(mode);
+                error = mciSendStringA("status w98cd current track", mode, sizeof(mode), NULL);
+                if (error)
+                {
+                    mciGetErrorStringA(error, actionStatus, sizeof(actionStatus));
+                    return 0;
+                }
+                track = atoi(mode);
+                if (!total || total > 99 || !track || track > total)
+                {
+                    strcpy(actionStatus, "Audio CD track information unavailable");
+                    return 0;
+                }
+                if (!strcmp(s + 3, "next"))
+                    track = track == total ? 1 : track + 1;
+                else
+                    track = track == 1 ? total : track - 1;
                 sprintf(command, "play w98cd from %u", track);
             }
             else

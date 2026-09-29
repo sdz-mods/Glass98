@@ -26,7 +26,7 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | Event countdown | Days remaining until, or elapsed since, a selected date |
 | Volume | Master, Wave, CD and MIDI volume/mute controls where supported |
 | Winamp | Track title, playback controls and volume for compatible running Winamp instances |
-| Audio CD | Physical CD playback, current track/count, optional offline MusicBrainz titles and editable local titles |
+| Audio CD | Physical CD playback, previous/next track controls with wraparound, optional offline MusicBrainz titles and editable local titles |
 | Quick Launch | Six labeled program, file, folder or shortcut slots |
 | Places | Four favorite folders and eight recent documents |
 | Removable media | Media status, open drive and CD eject |
@@ -108,6 +108,9 @@ global refresh override. Under **Rendering**, enable **Disable transparency
 Saved opacity values are retained; uncheck it to restore transparency.
 The **Themes** tab selects presets, saves custom themes,
 and generates colors and opacity from an image.
+
+The **Audio CD** widget shows the current track and track count. **Next** wraps
+from the last track to track 1; **Prev** wraps from track 1 to the last track.
 
 The package can include an optional **offline CD database** derived from
 MusicBrainz's CC0 core data. Setup offers to install it and shows the required

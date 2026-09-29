@@ -1028,7 +1028,8 @@ function render(i) {
             cdTracks > 0 ? ' of ' +
             cdTracks : '') : '')) + '<div class="buttons">';
         if (savedOptions.cd) s += button('Open ' + savedOptions.cd + ':', 'device/cd/open/' + savedOptions.cd);
-        s += button('Play', 'device/cd/play') + button('Pause', 'device/cd/pause') + button('Next', 'device/cd/next') +
+        s += button('Play', 'device/cd/play') + button('Pause', 'device/cd/pause') +
+            button('Prev', 'device/cd/prev') + button('Next', 'device/cd/next') +
             button('Stop', 'device/cd/stop') + button('Eject', 'device/cd/eject') + cdEditButton() + '</div>' + detail(
                 actionStatus ||
                 '');
