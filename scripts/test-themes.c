@@ -10,11 +10,12 @@ int main(void)
     char path[MAX_PATH], full[MAX_PATH], layout[4096], original[4096], graphite[4096], row[128], v[4096], cmd[128],
          name[40], output[8192];
     int i, j, failed = 0;
+    char *cursor;
     FILE *f;
     if (!GetTempFileNameA(".", "wth", 0, path) || !GetFullPathNameA(path, sizeof(full), full, NULL))
         return 2;
     strcpy(layout, "3|333|1|0|3");
-    for (i = 0; i < 22; i++)
+    for (i = 0; i < 28; i++)
     {
         sprintf(row, "|%d|%d|%d|%06X|F0F0F0|AABBCC|%d|%d", i % 2, i * 7, i * 9, i * 101, 20 + i, 2 + i);
         strcat(layout, row);
@@ -78,6 +79,35 @@ int main(void)
     CHECK(theme_action("apply/100", full, layout));
     CHECK(!strcmp(layout, original));
     puts("PASS: preset apply, full appearance restore, previous snapshot swap, preserved content/layout, custom replace/delete, validation, escaping and 16-theme limit");
+    GetPrivateProfileStringA("Theme0", "Data", "", v, sizeof(v), full);
+    cursor = v;
+    for (i = 0; i < 93; i++)
+    {
+        cursor = strchr(cursor, '|');
+        CHECK(cursor != NULL);
+        if (i < 92)
+            cursor++;
+    }
+    *cursor = 0;
+    CHECK(WritePrivateProfileStringA("Theme0", "Data", v, full));
+    CHECK(theme_action("apply/100", full, layout));
+    strcpy(original, "3|333|1|0|3");
+    for (i = 0; i < 28; i++)
+    {
+        sprintf(row, "|%d|%d|%d|%06X|F0F0F0|AABBCC|%d|%d", i % 2, i * 7, i * 9,
+                i < 22 ? i * 101 : 0, i < 22 ? 20 + i : 20, 2 + i);
+        strcat(original, row);
+    }
+    CHECK(!strcmp(layout, original));
+    memset(v, 'A', 150);
+    strcpy(v + 150, "|FFFFFF|FFFFFF|55");
+    strcpy(output, "1|0|112233|445566|778899|");
+    strcat(output, v);
+    for (i = 1; i < 22; i++)
+        strcat(output, "|000000|FFFFFF|FFFFFF|55");
+    CHECK(WritePrivateProfileStringA("Theme0", "Data", output, full));
+    CHECK(!theme_action("apply/100", full, layout));
+    puts("PASS: A00 saved themes extend to new widgets and malformed colors are rejected");
 done:
     WritePrivateProfileStringA(NULL, NULL, NULL, full);
     DeleteFileA(full);

@@ -11,7 +11,7 @@ with tempfile.TemporaryDirectory(prefix="w98-place-", dir=root / "build") as nam
     exe = work / "GLASSPRF.EXE"
     shutil.copy2(root / "build/glassprf.exe", exe)
     base = ["3", "280", "0", "1", "3"]
-    for i in range(22):
+    for i in range(28):
         base += ["1" if i in (0, 3) else "0", "32000" if i == 3 else "998",
                  "32000" if i == 3 else "20", "010203", "F0F1F2", "AABBCC", "64", "2"]
 

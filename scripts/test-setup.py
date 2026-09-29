@@ -21,11 +21,19 @@ with tempfile.TemporaryDirectory(prefix="glass98-setup-", dir=root / "build") as
     ini.write_text("[Desktop]\nInitialWallpaperMode=2\nWallpaper=WALL.BMP\nLayout=invalid\n[Options]\nnotes=keep me\n")
     result = prepare()
     layout = result["Desktop"]["Layout"].split("|")
-    assert len(layout) == 181 and layout[0] == "3" and layout[4] == "2"
+    assert len(layout) == 229 and layout[0] == "3" and layout[4] == "2"
     assert result["Options"]["notes"] == "keep me"
     before = ini.read_bytes()
     prepare()
     assert ini.read_bytes() == before, "valid settings should remain byte-identical"
+
+    a00 = layout[:181]
+    a00[8] = "123456"
+    ini.write_text("[Desktop]\nLayout=" + "|".join(a00) + "\n[Options]\nnotes=keep A00 settings\n")
+    expanded = prepare()["Desktop"]["Layout"].split("|")
+    assert len(expanded) == 229
+    assert expanded[8] == expanded[184] == "123456", "new widgets inherit the existing appearance"
+    assert all(expanded[5 + i * 8] == "0" for i in range(22, 28))
 
     old = layout[:109]
     old[0] = "2"
@@ -33,7 +41,7 @@ with tempfile.TemporaryDirectory(prefix="glass98-setup-", dir=root / "build") as
     ini.write_text("[Desktop]\nLayout=" + "|".join(old) + "\n[Options]\nnotes=keep older settings\n")
     result = prepare()
     migrated = result["Desktop"]["Layout"].split("|")
-    assert len(migrated) == 181 and migrated[0] == "3" and migrated[4] == "1"
+    assert len(migrated) == 229 and migrated[0] == "3" and migrated[4] == "1"
     assert result["Options"]["notes"] == "keep older settings"
     assert "'disableAlpha':'0'" in (work / "PREFS.JS").read_text()
     # Verify opaque rendering persists through the native command/publish path.

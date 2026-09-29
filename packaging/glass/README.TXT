@@ -114,6 +114,10 @@ refresh rates may be incomplete. Uptime wraps after about 49.7 days.
 CPU frequency is detected once per collector process. Startup estimates on
 older CPUs and TSC reference rates on modern CPUs are labeled separately
 from base frequency; these are not live turbo/throttling readings.
+CPU frequency: a successful startup reading is saved. If a later calibration
+fails, a reading saved for the same detected CPU is shown as cached. Without
+a matching saved reading, the frequency line says unavailable. Calibration
+still runs only once per collector process; this is not a live frequency meter.
 Disks: select drive letters, including currently absent ones. New settings
 select only C:. Optional automatic selection covers C:-Z:.
 Empty media is labelled; missing letters disappear.
@@ -174,6 +178,26 @@ Picture frame: choose up to six BMP/JPEG/GIF files. Previous/Next or slideshow;
 set slideshow seconds to 0 for manual use. Images fit without stretching and
 stay at their selected paths. Missing/unsupported images are labelled.
 Event countdown: label and YYYY-MM-DD date, days remaining/Today/days elapsed.
+Desktop controls: choose up to six wallpaper images, then use Previous/Next.
+Start or enable/disable the screensaver, apply a saved Glass98 theme, or choose
+from the Windows Appearance schemes installed on this computer. Applying a
+Windows scheme uses the Display applet to update colors, fonts and sizes.
+Custom schemes saved in Display Properties / Appearance are also listed.
+Memory details: physical RAM, Windows-reported paging capacity, collector
+virtual address space and largest free virtual block. Paging capacity is not
+the swap file size on disk; virtual readings are for the collector process.
+The largest-block scan runs at most once every ten seconds.
+The paging-capacity percentage uses Windows-reported total/available values.
+Automatic sizing can change that capacity; 100% is not necessarily a fixed system limit.
+Calculator: arithmetic with parentheses and + - * / % (remainder) ^ (power),
+unit conversion, and unsigned 32-bit hexadecimal/decimal/binary conversion.
+Character map: Latin characters, configurable font, click to copy. A character
+must be supported by the active Windows code page to copy as plain text.
+Daily checklist: up to 24 task lines and 900 UTF-8 input bytes. Check marks reset
+at local midnight. Editing the task list clears its check marks.
+Clipboard: plain-text preview, up to 2048 bytes, with no history. While enabled,
+its preview is in the local telemetry file; disabling clears it on the next
+collection. Images and file lists are not displayed.
 
 Disabled collectors release file counters, resource helper and mixer handles.
 Notes, clocks, timers, pictures and event countdowns need no hardware collection.

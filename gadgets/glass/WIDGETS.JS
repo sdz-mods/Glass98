@@ -1,13 +1,15 @@
 /* IE6-compatible desktop UI. No canvas, SVG, modern JS, ActiveX or HTML injection from telemetry. */
 var ids = ['system', 'disks', 'network', 'clock', 'calendar', 'reserved', 'battery', 'volume', 'winamp', 'cd', 'launch',
-    'rss', 'graphs', 'nettools', 'resources', 'sticky', 'timer', 'places', 'media', 'picture', 'event', 'reservedVu'
+    'rss', 'graphs', 'nettools', 'resources', 'sticky', 'timer', 'places', 'media', 'picture', 'event',
+    'reservedVu', 'desktop', 'memory', 'calculator', 'characters', 'daily', 'clipboard'
 ];
 var titles = ['System', 'Disks', 'Network', 'Clock', 'Calendar', '', 'Battery', 'Volume', 'Winamp', 'Audio CD',
     'Quick Launch', 'News', 'Performance', 'Network tools', 'System resources', 'Sticky notes', 'Timer', 'Places',
-    'Removable media', 'Picture frame', 'Event countdown', ''
+    'Removable media', 'Picture frame', 'Event countdown', '', 'Desktop controls', 'Memory details', 'Calculator',
+    'Character map', 'Daily checklist', 'Clipboard'
 ];
 var heights = [306, 210, 240, 118, 255, 195, 112, 236, 145, 130, 175, 175, 245, 180, 160, 150, 130, 200, 150, 260, 140,
-        150
+        150, 260, 260, 200, 245, 170, 200
     ],
     panels = [],
     width = 280,
@@ -77,6 +79,9 @@ function parse(s) {
     if (a.length == 109 && a[0] == '2') {
         a[0] = '3';
         for (i = 13; i < ids.length; i++) a = a.concat([0, 32000, 350, '000000', 'FFFFFF', '80FFFF', 55, 2]);
+    }
+    if (a.length == 181 && a[0] == '3') {
+        for (i = 22; i < ids.length; i++) a = a.concat([0, 32000, 350, a[8], a[9], a[10], a[11], 2]);
     }
     if (a.length != 5 + ids.length * 8 || a[0] != '3') return false;
     for (i = 1; i < a.length; i++) {
@@ -507,7 +512,7 @@ function loadWidget(inspected) {
             '\')">Folder</button> <button onclick="command(\'clear/' + j +
             '\')">Clear</button></td></tr></table></div>';
         s +=
-        '<p class="help">Choose .lnk shortcuts for programs with arguments, or .cpl files for Control Panel items.</p>';
+            '<p class="help">Choose .lnk shortcuts for programs with arguments, or .cpl files for Control Panel items.</p>';
     }
     if (i == 11) s = '<p>RSS/Atom URL <input id="rssUrl" class="wide" value="' + esc(o.rss || '') +
         '"></p><p>Fetch every <input id="rssMinutes" class="num" value="' + esc(o.rssminutes || 15) +
@@ -910,6 +915,7 @@ function updateGraphs() {
 }
 
 function render(i) {
+    if (choiceMenu && (i == 22 || i == 24)) return;
     if (i == 12) {
         var graphFlow = el('flow12');
         if (!graphFlow._graphBuilt) {
@@ -1008,7 +1014,7 @@ function render(i) {
                 .volume, i) + '<div class="buttons">' + button('-', 'device/volume/' + j + '/0/' + Math.max(0, p
                 .volume - 10)) + button('+', 'device/volume/' + j + '/0/' + Math.min(100, p.volume + 10)) + (p
                 .mute >= 0 ? button(p.mute ? 'Unmute' : 'Mute', 'device/volume/' + j + '/1/' + (p.mute ? 0 :
-                1)) : '') + '</div>');
+                    1)) : '') + '</div>');
         }
         h = 375;
     }
@@ -1086,6 +1092,7 @@ function tick() {
     }
     if (inFlight && actionAck == inFlight && ackTime != sentAckTime) {
         if (!ackOK) {
+            dailyPending = null;
             saveNotice('Could not save settings. Check the installation folder.');
             optionQueue = [];
             awaiting = '';
@@ -1093,6 +1100,7 @@ function tick() {
         inFlight = '';
     }
     if (inFlight && now - sentAt > 15000) {
+        dailyPending = null;
         saveNotice('Save not confirmed. Retry Apply.');
         inFlight = '';
         optionQueue = [];
@@ -1142,7 +1150,7 @@ function tick() {
     if (!settingsView) {
         for (i = 0; i < panels.length; i++)
             if (panels[i].on && dragging != i && (!lastDraw[i] || now - lastDraw[i] >= effectiveSeconds(i) * 1000 || (
-                    extraChanged && (i == 1 || (now < fastUntil && (i == 7 || i == 8 || i == 9)))))) {
+                    extraChanged && (i == 1 || i == 22 || (now < fastUntil && (i == 7 || i == 8 || i == 9)))))) {
                 if (i == 12) {
                     f = core();
                     nets = networkSelected();
@@ -1215,7 +1223,7 @@ window.setInterval(function() {
     if (!settingsView && (panels[0].on || panels[12].on)) el('feed').src = 'DATA.JS?v=' + v;
     var needExtra = settingsView || panels[0].on || panels[1].on || panels[2].on || panels[6].on || panels[7]
         .on || panels[8].on || panels[9].on || panels[12].on || panels[13].on || panels[14].on || panels[17]
-        .on || panels[18].on;
+        .on || panels[18].on || panels[22].on || panels[23].on || panels[27].on;
     if (needExtra) el('extra').src = 'EXTRA.JS?v=' + v;
     el('prefs').src = 'PREFS.JS?v=' + v;
     if (panels[13].on) el('pingfeed').src = 'PING.JS?v=' + v;

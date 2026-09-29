@@ -18,6 +18,7 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | Network | Selected interfaces, transfer rates/totals, IP address, gateway and hostname |
 | Performance | Scrolling CPU, RAM, network and file read/write graphs |
 | System resources | Free SYSTEM, USER and GDI resource pools |
+| Memory details | Physical RAM, Windows paging capacity, collector virtual space and largest free virtual block |
 | Battery | Charge level, AC/charging state and driver-reported remaining runtime |
 | Clock | Digital clock, 12/24-hour modes and up to six fixed-offset world clocks |
 | Calendar | Month navigation, today highlight and dated notes |
@@ -31,6 +32,11 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | Places | Four favorite folders and eight recent documents |
 | Removable media | Media status, open drive and CD eject |
 | Picture frame | Up to six local images with manual navigation or slideshow |
+| Desktop controls | Wallpaper switching, screensaver controls, Windows Appearance schemes and Glass98 themes |
+| Calculator | Arithmetic, unit conversion and unsigned hex/decimal/binary conversion |
+| Character map | Latin characters with click-to-copy and configurable font |
+| Daily checklist | Up to 24 tasks, with check marks resetting at local midnight |
+| Clipboard | Scrollable plain-text preview without a clipboard history |
 | Network tools | On-demand host/gateway ping and access to Network settings |
 | News | Rotating RSS/Atom headlines |
 
@@ -109,16 +115,23 @@ Saved opacity values are retained; uncheck it to restore transparency.
 The **Themes** tab selects presets, saves custom themes,
 and generates colors and opacity from an image.
 
+## Widget controls
+
 The **Audio CD** widget shows the current track and track count. **Next** wraps
 from the last track to track 1; **Prev** wraps from track 1 to the last track.
 
 The package can include an optional **offline CD database** derived from
 MusicBrainz's CC0 core data. Setup offers to install it and shows the required
-disk space. Album and track names are matched locally from the disc's track
-layout; no connection or account is required. Lookups use an on-disk index and
-cache the current disc, keeping memory use low. Where multiple releases match,
-the CD widget lets you cycle through them. Coverage is not universal; mixed
-audio/data discs currently require manual titles. See the
+disk space. Album and track names are matched locally using the CD's track
+count and timings; no connection or account is required. Where multiple
+releases match, the widget lets you cycle through them. Coverage is not
+universal; mixed audio/data discs currently require manual titles.
+
+The database stays on disk. Glass98 searches its sorted index and reads only
+candidate album records, then caches the selected album's titles. Changing
+tracks or refreshing the widget does not repeat the lookup. Memory use stays
+small regardless of database size: about 51 KB for cached titles and a temporary
+52 KB lookup buffer, plus bookkeeping and file buffering. See the
 [CD database manual](packaging/glass/CDDATA.TXT).
 
 Your own CD album and track names are stored locally in `CDTITLES.INI` and
@@ -127,11 +140,33 @@ opened, click **Edit titles**, edit its album/artist and numbered tracks in
 Notepad, then save. The widget reads those titles when that disc is inserted.
 No online database or additional library is required.
 
+**Desktop controls** combines up to six wallpapers, screensaver start/enable/
+disable, Windows Appearance schemes and saved Glass98 themes. Windows Appearance
+lists the schemes installed on that computer, including custom schemes saved
+through **Display Properties / Appearance**. Applying a scheme uses Windows'
+own Display applet to update colors, fonts and sizes.
+
 The **System** widget measures CPU frequency once per collector process and
 saves successful readings. If calibration fails on a later startup, it uses a
 saved reading for the same detected CPU, marked **cached**. If no matching
 reading exists, it displays **CPU frequency unavailable**. These values are
 not live turbo or throttling measurements.
+
+The **Calculator** widget includes arithmetic, unit conversion and unsigned
+32-bit hexadecimal/decimal/binary conversion. Choose a mode, enter a value,
+and click **Calculate**.
+
+The **Character map** starts with extended Latin characters. Click a character
+to copy it; its font is configurable in widget options. The Windows code page
+must support the character for it to copy correctly as plain text.
+
+The **Daily checklist** accepts one task per line in widget options, up to
+24 tasks. Check marks are saved and reset at local midnight. Editing the task
+list clears its check marks.
+
+The **Clipboard** widget reads plain text only (up to 2048 bytes). While enabled,
+its preview is included in the local telemetry file. Disabling the widget clears
+that preview on the next collection; there is no saved clipboard history.
 
 ## Build from source
 
@@ -157,6 +192,10 @@ repository root.
   feed and serves it over HTTP. Point the News widget at that local HTTP URL.
 - File activity includes cache activity; it is not a physical disk-busy percentage.
 - Hardware/driver-dependent readings are shown as unavailable when unsupported.
+- The paging-capacity bar uses the total and available values reported by Windows.
+  With automatic sizing, capacity can grow or shrink; 100% does not necessarily
+  mean Windows is out of memory. Virtual memory and largest free block refer to the collector
+  process.
 
 When reporting a problem, include the release, hardware, IE version, display mode,
 reproduction steps and whether it happens after a fresh install or update.

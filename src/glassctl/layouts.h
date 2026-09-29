@@ -82,6 +82,7 @@ static int layout_switch(int w, int h, int aw, int ah, int *sizes)
         return 0;
     sprintf(section, "Layout.%s", key);
     GetPrivateProfileStringA(section, "Layout", "", saved, sizeof(saved), ini);
+    extend_layout(saved);
     exists = valid(saved);
     initial = !layout_key(old) && !exists;
     oldaw = GetPrivateProfileIntA(section, "WorkWidth", 0, ini);

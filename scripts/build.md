@@ -52,6 +52,7 @@ python scripts/test-placement.py
 .\scripts\test-frequency.ps1
 .\scripts\test-autotheme.ps1
 .\scripts\test-cdshutdown.ps1
+.\scripts\test-desktop-state.ps1
 ```
 
 Native test executables and scratch files stay in `build`. Test helpers operate
@@ -90,3 +91,8 @@ payload offset and payload length. The native reader verifies all offsets
 after the hash lookup, allows a two-frame lead-out difference, and bounds every
 read. Files must be smaller than 2 GiB. Duplicate metadata is removed while
 distinct matching releases remain selectable. No cover artwork is included.
+
+Desktop state checks: run `scripts/test-desktop-state.ps1` to test CPU-frequency
+cache validation and scheme command parsing without changing host appearance.
+On a Windows 98 test machine, `test-winschemes.exe --exercise` additionally
+applies a native Appearance scheme and restores the previous named scheme.

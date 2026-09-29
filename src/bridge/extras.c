@@ -7,6 +7,8 @@
 #include <string.h>
 #include "extras.h"
 #include "addons.h"
+#include "../widgets.h"
+void details_collect(FILE*, const char*, int*, int);
 void details_cd(FILE*, const char*, int, int, int);
 static char root[MAX_PATH], ini[MAX_PATH];
 static HANDLE stopEvent, wakeEvent, worker;
@@ -558,7 +560,7 @@ static DWORD WINAPI collect(void *unused)
     char selection[80], lastSelection[80] = "", layout[4096], lastLayout[4096] = "";
     FILE *f, *diskfile;
     DWORD lastDisk = 0, waitResult;
-    int interval, enabled[22], i, inspect, changed, active, lastEnabled = -1;
+    int interval, enabled[GLASS98_PANELS], i, inspect, changed, active, lastEnabled = -1;
     size_t bytes;
     FILETIME ft;
     double now;
@@ -586,7 +588,7 @@ static DWORD WINAPI collect(void *unused)
         if (*action)
             perform_action(action);
         inspect = InterlockedExchange(&inspectRequested, 0);
-        for (i = 0; i < 22; i++)
+        for (i = 0; i < GLASS98_PANELS; i++)
             refresh_seconds(i, &enabled[i]);
         enabled[21] = 0; /* Reserved layout slot; never enable a collector. */
         GetPrivateProfileStringA("Desktop", "Layout", "", layout, sizeof(layout), ini);
@@ -594,7 +596,7 @@ static DWORD WINAPI collect(void *unused)
         if (changed)
             strcpy(lastLayout, layout);
         active = enabled[0] || enabled[1] || enabled[2] || enabled[6] || enabled[7] || enabled[8] || enabled[9] ||
-                 enabled[12] || enabled[13] || enabled[14] || enabled[17] || enabled[18];
+                 enabled[12] || enabled[13] || enabled[14] || enabled[17] || enabled[18] || enabled[22] || enabled[23] || enabled[27];
         GetPrivateProfileStringA("Options", "drives", "C", selection, sizeof(selection), ini);
         interval = refresh_seconds(1, &enabled[1]);
         if ((enabled[1] && (!lastDisk || strcmp(selection, lastSelection) || lastEnabled != 1 ||
@@ -652,6 +654,7 @@ static DWORD WINAPI collect(void *unused)
                     fputs("var drives=[];\n", f);
                 devices(f);
                 addons_collect(f, root, ini, enabled);
+                details_collect(f, ini, enabled, refresh_seconds(WIDGET_MEMORY, &enabled[WIDGET_MEMORY]));
                 fprintf(f,
                         "var collecting={core:%d,display:%d,disks:%d,network:%d,battery:%d,mixer:%d,winamp:%d,cd:%d,fileActivity:%d,resources:%d,recent:%d,media:%d,vu:%d};\n",
                         enabled[0] || enabled[12], enabled[0], enabled[1], enabled[2] || enabled[12] ||
@@ -671,6 +674,7 @@ static DWORD WINAPI collect(void *unused)
     while (waitResult != WAIT_OBJECT_0 && waitResult != WAIT_FAILED);
     addons_stop();
     close_cd();
+    DeleteFileA(destination);
     if (ipmodule)
         FreeLibrary(ipmodule);
     return 0;

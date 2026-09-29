@@ -201,7 +201,7 @@ int main(int argc, char **argv)
     CHECK(GetTempFileNameA(".", "wap", 0, relative));
     CHECK(GetFullPathNameA(relative, sizeof(ini), ini, NULL));
     strcpy(layout, "3|280|1|1|3");
-    for (i = 0; i < 22; i++)
+    for (i = 0; i < 28; i++)
         strcat(layout, "|1|10|20|010203|F0F1F2|AABBCC|55|9");
     strcpy(original, layout);
     WritePrivateProfileStringA("Desktop", "Wallpaper", image, ini);

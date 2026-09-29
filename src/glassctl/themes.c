@@ -7,7 +7,8 @@
 #include <ctype.h>
 #include "themes.h"
 #include "autotheme.h"
-#define COUNT 22
+#include "../widgets.h"
+#define COUNT GLASS98_PANELS
 #define FIELDS (5+COUNT*8)
 #define STYLE_FIELDS (5+COUNT*4)
 #define CUSTOM 16
@@ -138,6 +139,27 @@ static int load(const char *ini, int id, char *name, char *data)
     section(id, sec);
     GetPrivateProfileStringA(sec, "Name", "", name, 80, ini);
     GetPrivateProfileStringA(sec, "Data", "", data, 2048, ini);
+    if (*name)
+    {
+        int fields = 1, index;
+        char *scan, copy[2048], *values[93], row[80];
+        for (scan = data; *scan; scan++)
+            if (*scan == '|')
+                fields++;
+        if (fields == 93)
+        {
+            strcpy(copy, data);
+            if (split(copy, values, 93) && color(values[5]) && color(values[6]) && color(values[7]) &&
+                    *values[8] && strlen(values[8]) <= 3)
+            {
+                sprintf(row, "|%s|%s|%s|%s", values[5], values[6], values[7], values[8]);
+                if (strlen(data) + (COUNT - 22) * strlen(row) >= 2048)
+                    return 0;
+                for (index = 22; index < COUNT; index++)
+                    strcat(data, row);
+            }
+        }
+    }
     return *name && style_valid(data);
 }
 static int put(const char *ini, int id, const char *name, const char *data)

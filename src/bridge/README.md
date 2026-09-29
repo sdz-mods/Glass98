@@ -12,6 +12,12 @@ thread and run only when needed by enabled widgets or a manager discovery
 request. Refresh settings control display updates; disk capacity queries also
 follow their effective refresh interval.
 
+Memory details, screensaver state and plain-text clipboard previews are collected
+only while their corresponding widgets are enabled. The largest free virtual
+block is measured in the collector's address space at most once every ten seconds.
+Clipboard previews contain at most 2048 bytes and are removed from the snapshot
+when the widget is disabled; normal collector shutdown removes `EXTRA.JS`.
+
 CD commands, status queries and device cleanup run on the same worker thread.
 Shutdown and drive changes explicitly stop playback before closing the MCI device.
 Local album and track names are read from `CDTITLES.INI` using the disc identity.

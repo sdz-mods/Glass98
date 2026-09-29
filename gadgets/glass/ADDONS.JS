@@ -65,7 +65,7 @@ function moreSettings(i) {
     }
     if (i == 20) s = '<p>Event label</p>' + textOption('eventName', o.eventName, false) + '<p>Date (YYYY-MM-DD)</p>' +
         textOption('eventDate', o.eventDate, false);
-    return s;
+    return s + utilitySettings(i);
 }
 
 function validDate(s) {
@@ -74,7 +74,7 @@ function validDate(s) {
     if (!m) return null;
     d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     return d.getFullYear() == Number(m[1]) && d.getMonth() == Number(m[2]) - 1 && d.getDate() == Number(m[3]) ? d :
-    null;
+        null;
 }
 
 function worldList(s) {
@@ -95,9 +95,9 @@ function worldList(s) {
 function validateMore(i) {
     var v;
     if (i == 3 && !worldList(el('worlds').value))
-    return 'Use Label|+HH:MM or Label|-HH:MM, up to six clocks (maximum UTC offset 14 hours).';
+        return 'Use Label|+HH:MM or Label|-HH:MM, up to six clocks (maximum UTC offset 14 hours).';
     if (i == 13 && !/^[a-zA-Z0-9.-]{0,120}$/.test(el('pingHost').value))
-    return 'Enter a hostname or IPv4 address without a URL prefix.';
+        return 'Enter a hostname or IPv4 address without a URL prefix.';
     if (i == 16) {
         v = Number(el('timerMinutes').value);
         if (!isFinite(v) || v < 0.02 || v > 10080) return 'Countdown duration must be 0.02 to 10080 minutes.';
@@ -107,15 +107,16 @@ function validateMore(i) {
         if (!isFinite(v) || v < 0 || v > 3600) return 'Slideshow interval must be 0 to 3600 seconds.';
     }
     if (i == 20 && el('eventDate').value && !validDate(el('eventDate').value))
-    return 'Enter a valid date as YYYY-MM-DD.';
+        return 'Enter a valid date as YYYY-MM-DD.';
     var ids = i == 3 ? ['worlds'] : i == 15 ? ['stickyText'] : i == 20 ? ['eventName'] : [];
     for (var j = 0; j < ids.length; j++)
         if (unescape(encodeURIComponent(el(ids[j]).value)).length > 900)
-        return 'Please keep this text under 900 UTF-8 bytes.';
-    return '';
+            return 'Please keep this text under 900 UTF-8 bytes.';
+    return utilityValidate(i);
 }
 
 function saveMore(i) {
+    utilitySave(i);
     if (i == 3) queueOption('worlds', el('worlds').value);
     if (i == 13) queueOption('pingHost', el('pingHost').value);
     if (i == 15) queueOption('notes', el('stickyText').value);
@@ -291,13 +292,14 @@ function photoError(img) {
 }
 
 function renderMore(i, ok) {
+    if (i >= 22) return utilityRender(i, ok);
     var s = '',
         j, a, p, d, now = new Date(),
         v, rows;
     if (i == 13) {
         s = section('HOST', detail(savedOptions.pingHost || 'Choose a host in widget options') +
             '<div class="buttons">' + button('Ping host', 'util/ping') + button('Network settings',
-            'util/network') + '</div>');
+                'util/network') + '</div>');
         if (ok) {
             for (j = 0; j < networks.length; j++) {
                 p = networks[j];
@@ -381,6 +383,7 @@ function renderMore(i, ok) {
 }
 
 function tickMore(now) {
+    utilityTick(now);
     var a, j, s;
     if (timerLocal && savedOptions.timerState == timerAck && !awaiting && !inFlight) {
         timerLocal = '';

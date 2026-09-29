@@ -13,7 +13,8 @@ int utility_action(const char*, const char*, const char*);
 #include "themes.h"
 static char ini[MAX_PATH], js[MAX_PATH], tmp[MAX_PATH], image[MAX_PATH];
 static const char *keyname = "W98WidgetsGlass";
-#define PANELS 22
+#include "../widgets.h"
+#define PANELS GLASS98_PANELS
 #define FIELDS (5+PANELS*8)
 static char defaults[4096];
 static void make_defaults(void)
@@ -85,11 +86,44 @@ static int valid(char *s)
     }
     return 1;
 }
+static void extend_layout(char *config)
+{
+    char copy[4096], row[100], *fields[13], *scan;
+    int count = 1, i;
+    if (strncmp(config, "3|", 2))
+        return;
+    for (scan = config; *scan; scan++)
+        if (*scan == '|')
+            count++;
+    if (count != 181 || strlen(config) > sizeof(copy) - 700)
+        return;
+    strcpy(copy, config);
+    scan = copy;
+    for (i = 0; i < 13; i++)
+    {
+        fields[i] = scan;
+        scan = strchr(scan, '|');
+        if (!scan)
+            return;
+        *scan++ = 0;
+    }
+    sprintf(row, "|0|32000|350|%.6s|%.6s|%.6s|%d|2", fields[8], fields[9], fields[10], atoi(fields[11]));
+    for (i = 22; i < PANELS; i++)
+        strcat(config, row);
+}
 static void migrate(char *config)
 {
     char old[1024], *a[19], *p;
     int i;
     char row[128], result[4096];
+    if (!strncmp(config, "3|", 2))
+    {
+        size_t before = strlen(config);
+        extend_layout(config);
+        if (strlen(config) != before && valid(config))
+            WritePrivateProfileStringA("Desktop", "Layout", config, ini);
+        return;
+    }
     if (!strncmp(config, "2|", 2))
     {
         int count = 1;
@@ -137,10 +171,10 @@ static void migrate(char *config)
     }
 }
 #include "layouts.h"
-static const char *optionKeys[] = {"drives", "adapters", "clock", "reminders", "rss", "rssminutes", "cd", "launch0", "launch1", "launch2", "launch3", "launch4", "launch5", "label0", "label1", "label2", "label3", "label4", "label5", "globalSeconds", "worlds", "notes", "timerMinutes", "timerMode", "timerState", "timerSound", "eventName", "eventDate", "pingHost", "photoSeconds", "photo0", "photo1", "photo2", "photo3", "photo4", "photo5", "fav0", "fav1", "fav2", "fav3", "meterColors", "meterLow", "meterMid", "meterHigh", "disableAlpha", NULL};
+static const char *optionKeys[] = {"drives", "adapters", "clock", "reminders", "rss", "rssminutes", "cd", "launch0", "launch1", "launch2", "launch3", "launch4", "launch5", "label0", "label1", "label2", "label3", "label4", "label5", "globalSeconds", "worlds", "notes", "timerMinutes", "timerMode", "timerState", "timerSound", "eventName", "eventDate", "pingHost", "photoSeconds", "photo0", "photo1", "photo2", "photo3", "photo4", "photo5", "fav0", "fav1", "fav2", "fav3", "meterColors", "meterLow", "meterMid", "meterHigh", "disableAlpha", "dailyItems", "dailyState", "characterFont", "wall0", "wall1", "wall2", "wall3", "wall4", "wall5", NULL};
 static int writable_option(int i)
 {
-    return i < 7 || (i >= 13 && i < 30) || i == 44;
+    return i < 7 || (i >= 13 && i < 30) || (i >= 44 && i <= 47);
 }
 static int save_options(char *s)
 {
@@ -183,7 +217,7 @@ static int save_options(char *s)
                 continue;
             if (text[j] == '\n')
             {
-                if (i != 3 && i != 20 && i != 21)
+                if (i != 3 && i != 20 && i != 21 && i != 45)
                     return 0;
                 stored[k++] = '\\';
                 stored[k++] = 'n';
@@ -346,6 +380,8 @@ static int publish(void)
     char config[4096], wall[MAX_PATH], settings[MAX_PATH + 10], value[2048], *p;
     FILE *f;
     int bad, i;
+    GetPrivateProfileStringA("Desktop", "Layout", defaults, config, sizeof(config), ini);
+    migrate(config);
     if (!layout_sync())
         return 0;
     /* Win9x caches profile writes: flush before reporting a durable save. */
@@ -725,7 +761,14 @@ int WINAPI WinMain(HINSTANCE h, HINSTANCE prev, LPSTR raw, int show)
             mutex = CreateMutexA(NULL, FALSE, "W98WidgetsSettingsWrite");
             if (mutex && WaitForSingleObject(mutex, 10000) == WAIT_OBJECT_0)
             {
-                ok = publish();
+                if (!strncmp(decoded + 21, "wallset/", 8))
+                {
+                    GetPrivateProfileStringA("Desktop", "Layout", defaults, transfer, sizeof(transfer), ini);
+                    migrate(transfer);
+                    ok = valid(transfer) && theme_action("refresh", ini, transfer);
+                }
+                if (!publish())
+                    ok = 0;
                 ReleaseMutex(mutex);
             }
             else

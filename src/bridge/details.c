@@ -1,4 +1,4 @@
-/* Offline and local CD album/track metadata. */
+/* Demand-driven memory, desktop state and plain-text clipboard snapshots. */
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
@@ -7,6 +7,163 @@
 #include <stdlib.h>
 #include "cdcatalog.h"
 #include "extras.h"
+#include "../widgets.h"
+#include "../winschemes.h"
+
+static double largest_block(void)
+{
+    SYSTEM_INFO system;
+    MEMORY_BASIC_INFORMATION region;
+    DWORD address, next, largest = 0, started = GetTickCount();
+    unsigned int count = 0;
+    GetSystemInfo(&system);
+    address = (DWORD)system.lpMinimumApplicationAddress;
+    while (address < (DWORD)system.lpMaximumApplicationAddress)
+    {
+        if (!VirtualQuery((void*)address, &region, sizeof(region)))
+            return -1;
+        if (region.State == MEM_FREE && region.RegionSize > largest)
+            largest = region.RegionSize;
+        next = (DWORD)region.BaseAddress + region.RegionSize;
+        if (next <= address)
+            break;
+        address = next;
+        if (++count > 8192 || GetTickCount() - started > 100)
+            return -1;
+    }
+    return (double)largest;
+}
+
+static void desktop_schemes(FILE *f, int enabled)
+{
+    static char names[128][SCHEME_NAME], current[SCHEME_NAME];
+    static DWORD sampled;
+    static int count;
+    HMODULE library;
+    HKEY key;
+    DWORD now = GetTickCount(), index, length, type, size;
+    int i, j;
+    char name[SCHEME_NAME];
+    fputs("var windowsSchemes=[", f);
+    if (!enabled)
+    {
+        sampled = 0;
+        fputs("];var windowsSchemeCurrent='';\n", f);
+        return;
+    }
+    if (!sampled || now - sampled >= 30000)
+    {
+        sampled = now;
+        count = 0;
+        library = windows_scheme_library();
+        if (library && GetProcAddress(library, "DeskSetCurrentSchemeA") &&
+                !RegOpenKeyA(HKEY_CURRENT_USER, SCHEME_KEY, &key))
+        {
+            for (index = 0; index < 1024 && count < 128; index++)
+            {
+                length = sizeof(name);
+                size = 0;
+                if (RegEnumValueA(key, index, name, &length, NULL, &type, NULL, &size))
+                    break;
+                if (type == REG_BINARY && size && length && length < sizeof(name))
+                    lstrcpynA(names[count++], name, SCHEME_NAME);
+            }
+            RegCloseKey(key);
+        }
+        if (library)
+            FreeLibrary(library);
+    }
+    current[0] = 0;
+    if (!RegOpenKeyA(HKEY_CURRENT_USER, "Control Panel\\Appearance", &key))
+    {
+        size = sizeof(current);
+        if (RegQueryValueExA(key, "Current", NULL, &type, (BYTE*)current, &size) || type != REG_SZ)
+            current[0] = 0;
+        current[sizeof(current) - 1] = 0;
+        RegCloseKey(key);
+    }
+    for (i = 0; i < count; i++)
+    {
+        if (i)
+            fputc(',', f);
+        fputc('[', f);
+        fputc('\'', f);
+        for (j = 0; names[i][j]; j++)
+            fprintf(f, "%02X", (unsigned char)names[i][j]);
+        fputs("',", f);
+        js_string(f, names[i]);
+        fputc(']', f);
+    }
+    fputs("];var windowsSchemeCurrent=", f);
+    fputc('\'', f);
+    for (j = 0; current[j]; j++)
+        fprintf(f, "%02X", (unsigned char)current[j]);
+    fputs("';\n", f);
+}
+
+void details_collect(FILE *f, const char *ini, int *enabled, int seconds)
+{
+    static DWORD sampled;
+    static MEMORYSTATUS memory;
+    static double largest = -1;
+    BOOL saver = FALSE;
+    char text[2049];
+    HANDLE handle;
+    const char *data;
+    DWORD size, count;
+    int state = 0, clipped = 0;
+    (void)ini;
+    if (enabled[WIDGET_MEMORY])
+    {
+        memory.dwLength = sizeof(memory);
+        GlobalMemoryStatus(&memory);
+        if (!sampled || GetTickCount() - sampled >= (DWORD)(seconds < 10 ? 10 : seconds) * 1000)
+        {
+            largest = largest_block();
+            sampled = GetTickCount();
+        }
+        fprintf(f,
+                "var memoryDetails={physical:%.0f,available:%.0f,pageTotal:%.0f,pageAvailable:%.0f,virtualTotal:%.0f,virtualAvailable:%.0f,largest:%.0f};\n",
+                (double)memory.dwTotalPhys, (double)memory.dwAvailPhys,
+                (double)memory.dwTotalPageFile, (double)memory.dwAvailPageFile,
+                (double)memory.dwTotalVirtual, (double)memory.dwAvailVirtual, largest);
+    }
+    else
+    {
+        sampled = 0;
+        fputs("var memoryDetails={};\n", f);
+    }
+    if (enabled[WIDGET_DESKTOP])
+        SystemParametersInfoA(SPI_GETSCREENSAVEACTIVE, 0, &saver, 0);
+    fprintf(f, "var desktopState={saver:%d};\n", saver != FALSE);
+    desktop_schemes(f, enabled[WIDGET_DESKTOP]);
+    text[0] = 0;
+    if (enabled[WIDGET_CLIPBOARD])
+    {
+        state = -1;
+        if (OpenClipboard(NULL))
+        {
+            state = IsClipboardFormatAvailable(CF_TEXT) ? 1 : 0;
+            handle = state == 1 ? GetClipboardData(CF_TEXT) : NULL;
+            if (handle && (data = GlobalLock(handle)) != NULL)
+            {
+                size = GlobalSize(handle);
+                for (count = 0; count < size && count < sizeof(text) - 1 && data[count]; count++)
+                    text[count] = data[count];
+                text[count] = 0;
+                clipped = count == sizeof(text) - 1 && count < size && data[count] != 0;
+                GlobalUnlock(handle);
+            }
+            else if (state == 1)
+                state = -1;
+            CloseClipboard();
+        }
+    }
+    fputs("var clipboardData={text:", f);
+    js_string(f, text);
+    fprintf(f, ",state:%d,truncated:%d};\n", state, clipped);
+}
+
 
 static int cd_frames(const char *command, unsigned long *frames)
 {

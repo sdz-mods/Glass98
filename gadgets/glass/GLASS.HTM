@@ -359,6 +359,34 @@ legend {
     height: 120px;
     margin: 6px auto
 }
+.choiceButton {
+    display: inline-block;
+    padding: 3px 6px;
+    border: 1px solid;
+    color: inherit;
+    text-decoration: none
+}
+#choicePopup {
+    display: none;
+    position: absolute;
+    width: 238px;
+    overflow: auto;
+    z-index: 30000;
+    background: #ffffff;
+    border: 1px solid #404040;
+    color: #000000
+}
+#choicePopup a {
+    display: block;
+    padding: 4px 6px;
+    line-height: 16px;
+    color: #000000;
+    text-decoration: none
+}
+#choicePopup a:hover {
+    background: #000080;
+    color: #ffffff
+}
 </style>
 <style type="text/css">
 /* Keep local time centered in the main clock area; world clocks follow below. */
@@ -438,4 +466,5 @@ var actionAck = '',
 <script>
 var settingsView = location.search == '?settings';
 </script><script id="pingfeed" src="PING.JS"></script><script src="WIDGETS.JS?v=@@VERSION@@"></script>
+<div id="choicePopup"></div>
 </body></html>
