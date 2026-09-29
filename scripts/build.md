@@ -51,6 +51,7 @@ python scripts/test-placement.py
 .\scripts\test-cpuname.ps1
 .\scripts\test-frequency.ps1
 .\scripts\test-autotheme.ps1
+.\scripts\test-cdshutdown.ps1
 ```
 
 Native test executables and scratch files stay in `build`. Test helpers operate

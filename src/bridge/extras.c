@@ -10,12 +10,25 @@
 static char root[MAX_PATH], ini[MAX_PATH];
 static HANDLE stopEvent, wakeEvent, worker;
 static LONG inspectRequested;
+static CRITICAL_SECTION actionLock;
+static char queuedAction[128];
+static int shuttingDown;
 static HMODULE ipmodule;
 static DWORD (WINAPI *adapters)(PIP_ADAPTER_INFO, PULONG);
 static DWORD (WINAPI *ifentry)(PMIB_IFROW);
 static DWORD (WINAPI *netparams)(PFIXED_INFO_W2KSP1, PULONG);
 static int cdopen = 0;
 static int refresh_seconds(int panel, int *enabled);
+/* CD commands and queries belong to the collector thread, including shutdown. */
+static void close_cd(void)
+{
+    if (cdopen)
+    {
+        mciSendStringA("stop w98cd wait", NULL, 0, NULL);
+        mciSendStringA("close w98cd wait", NULL, 0, NULL);
+        cdopen = 0;
+    }
+}
 static char actionStatus[160] = "";
 void js_string(FILE *f, const char *s)
 {
@@ -409,9 +422,7 @@ static int perform_action(const char *s)
             sprintf(path, "%c:\\", drive);
             if (GetDriveTypeA(path) != DRIVE_CDROM)
                 return 0;
-            if (cdopen)
-                mciSendStringA("close w98cd", NULL, 0, NULL);
-            cdopen = 0;
+            close_cd();
             sprintf(command, "open %c: type cdaudio alias w98cd shareable", drive);
             error = mciSendStringA(command, NULL, 0, NULL);
             if (!error)
@@ -509,13 +520,19 @@ int device_action(const char *s)
         extra_refresh();
         return 1;
     }
-    result = perform_action(s);
+    if (shuttingDown || strlen(s) >= sizeof(queuedAction))
+        return 0;
+    EnterCriticalSection(&actionLock);
+    result = !queuedAction[0];
+    if (result)
+        strcpy(queuedAction, s);
+    LeaveCriticalSection(&actionLock);
     extra_refresh();
     return result;
 }
 static DWORD WINAPI collect(void *unused)
 {
-    char destination[MAX_PATH], temporary[MAX_PATH], cachepath[MAX_PATH], cache[16384];
+    char destination[MAX_PATH], temporary[MAX_PATH], cachepath[MAX_PATH], cache[16384], action[128];
     char selection[80], lastSelection[80] = "", layout[4096], lastLayout[4096] = "";
     FILE *f, *diskfile;
     DWORD lastDisk = 0, waitResult;
@@ -540,6 +557,12 @@ static DWORD WINAPI collect(void *unused)
     }
     do
     {
+        EnterCriticalSection(&actionLock);
+        strcpy(action, queuedAction);
+        queuedAction[0] = 0;
+        LeaveCriticalSection(&actionLock);
+        if (*action)
+            perform_action(action);
         inspect = InterlockedExchange(&inspectRequested, 0);
         for (i = 0; i < 22; i++)
             refresh_seconds(i, &enabled[i]);
@@ -573,6 +596,8 @@ static DWORD WINAPI collect(void *unused)
         }
         lastEnabled = enabled[1];
         addons_idle(enabled);
+        if (!enabled[9])
+            close_cd();
         if (active || inspect || changed)
         {
             f = fopen(temporary, "wb");
@@ -623,8 +648,7 @@ static DWORD WINAPI collect(void *unused)
     }
     while (waitResult != WAIT_OBJECT_0 && waitResult != WAIT_FAILED);
     addons_stop();
-    if (cdopen)
-        mciSendStringA("close w98cd", NULL, 0, NULL);
+    close_cd();
     if (ipmodule)
         FreeLibrary(ipmodule);
     return 0;
@@ -632,6 +656,9 @@ static DWORD WINAPI collect(void *unused)
 void extra_start(const char *directory)
 {
     DWORD id;
+    InitializeCriticalSection(&actionLock);
+    queuedAction[0] = 0;
+    shuttingDown = 0;
     lstrcpynA(root, directory, sizeof(root));
     sprintf(ini, "%s\\WIDGETS.INI", root);
     stopEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
@@ -641,11 +668,14 @@ void extra_start(const char *directory)
 }
 void extra_stop(void)
 {
+    if (shuttingDown)
+        return;
+    shuttingDown = 1;
     if (stopEvent)
         SetEvent(stopEvent);
     if (worker)
     {
-        WaitForSingleObject(worker, 2000);
+        WaitForSingleObject(worker, 4000);
         CloseHandle(worker);
     }/* process exit releases events if a device call is still completing */
 }

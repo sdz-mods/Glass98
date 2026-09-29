@@ -83,6 +83,10 @@ static LRESULT CALLBACK writerWindow(HWND window, UINT message, WPARAM wp, LPARA
         return TRUE;
     if (message == WM_CLOSE || (message == WM_ENDSESSION && wp))
     {
+#ifdef W98_SUITE
+        /* Finish media cleanup before acknowledging Windows session termination. */
+        extra_stop();
+#endif
         PostQuitMessage(0);
         return 0;
     }
