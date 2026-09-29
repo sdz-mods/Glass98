@@ -12,6 +12,16 @@ thread and run only when needed by enabled widgets or a manager discovery
 request. Refresh settings control display updates; disk capacity queries also
 follow their effective refresh interval.
 
+CD commands, status queries and device cleanup run on the same worker thread.
+Shutdown and drive changes explicitly stop playback before closing the MCI device.
+Local album and track names are read from `CDTITLES.INI` using the disc identity.
+When `CDMETA.DAT` is installed, the worker reads the disc layout once and performs
+an indexed offline lookup. It restores MCI's playback time format after querying
+the layout. Matching album/track data stays cached until the disc or selected
+edition changes; manual INI values override it. The catalog is never loaded in
+full. `CDLOOKUP.TMP` supplies the current titles to the editor without modifying
+the user's saved entries. Mixed audio/data discs are left to manual matching.
+
 The HTML desktop polls local snapshots once per second and renders each widget
 at its configured interval, or the global override. Native telemetry does not
 run inside Explorer. Core data older than ten seconds is treated as unavailable;

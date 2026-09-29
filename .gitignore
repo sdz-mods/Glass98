@@ -9,3 +9,5 @@
 *.dll
 *.ocx
 *.pdb
+__pycache__/
+*.pyc

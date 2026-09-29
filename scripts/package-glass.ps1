@@ -1,14 +1,15 @@
+param([string]$CdDatabase)
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path $PSScriptRoot -Parent
 & (Join-Path $PSScriptRoot 'build.ps1')
 $output=Join-Path $projectRoot 'build'
 Push-Location $output
 try {
-    & wcl386.exe -q -bt=nt -l=nt_win -3r -os -dW98_SUITE '-fe=w98data.exe' "$projectRoot\src\bridge\datawriter.c" "$projectRoot\src\bridge\telemetry.c" "$projectRoot\src\bridge\extras.c" "$projectRoot\src\bridge\addons.c" advapi32.lib winmm.lib gdi32.lib shell32.lib ole32.lib
+    & wcl386.exe -q -bt=nt -l=nt_win -3r -os -dW98_SUITE '-fe=w98data.exe' "$projectRoot\src\bridge\datawriter.c" "$projectRoot\src\bridge\telemetry.c" "$projectRoot\src\bridge\extras.c" "$projectRoot\src\bridge\addons.c" "$projectRoot\src\bridge\details.c" "$projectRoot\src\bridge\cdcatalog.c" advapi32.lib winmm.lib gdi32.lib shell32.lib ole32.lib
     if($LASTEXITCODE){throw 'suite telemetry build failed'}
     & wcl386.exe -q -bt=nt -l=nt -3r -os '-fe=glassctl.exe' "$projectRoot\src\glassctl\glassctl.c" ole32.lib advapi32.lib gdi32.lib
     if($LASTEXITCODE){throw 'glassctl build failed'}
-    & wcl386.exe -q -bt=nt -l=nt_win -3r -os '-fe=glassprf.exe' "$projectRoot\src\glassctl\glasspref.c" "$projectRoot\src\glassctl\rss.c" "$projectRoot\src\glassctl\actions.c" "$projectRoot\src\glassctl\themes.c" "$projectRoot\src\glassctl\palette.c" "$projectRoot\src\glassctl\wallimage.c" oleaut32.lib gdi32.lib advapi32.lib comdlg32.lib shell32.lib ole32.lib wininet.lib winmm.lib wsock32.lib
+    & wcl386.exe -q -bt=nt -l=nt_win -3r -os '-fe=glassprf.exe' "$projectRoot\src\glassctl\glasspref.c" "$projectRoot\src\glassctl\rss.c" "$projectRoot\src\glassctl\actions.c" "$projectRoot\src\glassctl\desktop.c" "$projectRoot\src\glassctl\themes.c" "$projectRoot\src\glassctl\palette.c" "$projectRoot\src\glassctl\wallimage.c" oleaut32.lib gdi32.lib advapi32.lib comdlg32.lib shell32.lib ole32.lib wininet.lib winmm.lib wsock32.lib
     if($LASTEXITCODE){throw 'glass settings build failed'}
     & wcl386.exe -q -bt=nt -l=nt -3r -os '-fe=g98setup.exe' "$projectRoot\src\glassctl\setup.c"
     if($LASTEXITCODE){throw 'Glass98 installer build failed'}
@@ -36,7 +37,7 @@ if(Test-Path -LiteralPath $obsoleteVu){Remove-Item -LiteralPath $obsoleteVu}
 foreach($name in @('gadgetctl.exe','w98data.exe','glassctl.exe','glassprf.exe','rsrc16.exe','g98setup.exe')){
     Copy-Item -LiteralPath (Join-Path $output $name) -Destination (Join-Path $package $name.ToUpperInvariant()) -Force
 }
-Copy-Item "$projectRoot\gadgets\glass\GLASS.HTM","$projectRoot\gadgets\glass\WALL.BMP","$projectRoot\gadgets\glass\WIDGETS.JS","$projectRoot\gadgets\glass\ADDONS.JS","$projectRoot\gadgets\glass\THEMES.JS","$projectRoot\gadgets\glass\MANAGER.JS","$projectRoot\gadgets\glass\MANAGER.CSS","$projectRoot\gadgets\glass\PLACEMENT.JS" $package -Force
+Copy-Item "$projectRoot\gadgets\glass\GLASS.HTM","$projectRoot\gadgets\glass\WALL.BMP","$projectRoot\gadgets\glass\WIDGETS.JS","$projectRoot\gadgets\glass\ADDONS.JS","$projectRoot\gadgets\glass\UTILITIES.JS","$projectRoot\gadgets\glass\THEMES.JS","$projectRoot\gadgets\glass\MANAGER.JS","$projectRoot\gadgets\glass\MANAGER.CSS","$projectRoot\gadgets\glass\PLACEMENT.JS" $package -Force
 $releaseVersion=([IO.File]::ReadAllText((Join-Path $projectRoot 'VERSION'))).Trim()
 if($releaseVersion -notmatch '^A[0-9]{2}$'){throw 'Invalid stack version'}
 $page=[IO.File]::ReadAllText((Join-Path $package 'GLASS.HTM')).Replace('@@VERSION@@',$releaseVersion)
@@ -61,5 +62,19 @@ foreach($name in @('INSTALL.BAT','REMOVE.BAT','README.TXT')){
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination (Join-Path $package 'LICENSE.TXT') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'NOTICE.TXT') -Destination $package -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'licenses\WATCOM.TXT') -Destination $package -Force
+if ($CdDatabase) {
+    $catalogStats = Get-Content -LiteralPath ([IO.Path]::ChangeExtension($CdDatabase, '.json')) -Raw | ConvertFrom-Json
+    if ((Get-FileHash -LiteralPath $CdDatabase -Algorithm SHA256).Hash -ne $catalogStats.sha256) { throw 'CD catalog does not match its build manifest' }
+    Copy-Item -LiteralPath $CdDatabase -Destination (Join-Path $package 'CDMETA.DAT') -Force
+    Copy-Item -LiteralPath (Join-Path $projectRoot 'packaging\glass\CDDATA.TXT') -Destination $package -Force
+    Copy-Item -LiteralPath (Join-Path $projectRoot 'licenses\CC0.TXT') -Destination $package -Force
+    $catalogSummary = "`r`nSnapshot: $($catalogStats.snapshot)`r`nCatalog entries: $($catalogStats.records)`r`nBytes: $($catalogStats.bytes)`r`nSHA-256: $($catalogStats.sha256)`r`n"
+    [IO.File]::AppendAllText((Join-Path $package 'CDDATA.TXT'), $catalogSummary, [Text.Encoding]::ASCII)
+} else {
+    foreach ($optionalFile in @('CDMETA.DAT','CDDATA.TXT','CC0.TXT')) {
+        $optionalPath = Join-Path $package $optionalFile
+        if (Test-Path -LiteralPath $optionalPath) { Remove-Item -LiteralPath $optionalPath }
+    }
+}
 Compress-Archive -Path (Join-Path $package '*') -DestinationPath (Join-Path $projectRoot 'dist\Glass98.zip') -Force
 Write-Output "Glass98 package: $package"

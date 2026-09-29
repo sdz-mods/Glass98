@@ -179,6 +179,7 @@ static int open_recent(DWORD id)
     FindClose(search);
     return ok;
 }
+int desktop_action(const char*, const char*, const char*);
 int utility_action(const char *cmd, const char *ini, const char *root)
 {
     char value[MAX_PATH], key[32], tail, drive, command[100], *p;
@@ -188,6 +189,10 @@ int utility_action(const char *cmd, const char *ini, const char *root)
     BROWSEINFOA bi;
     LPITEMIDLIST item;
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+    ok = desktop_action(cmd, ini, root);
+    if (ok >= 0)
+        return ok;
+    ok = 0;
     if (!strcmp(cmd, "ping"))
     {
         GetPrivateProfileStringA("Options", "pingHost", "", value, sizeof(value), ini);

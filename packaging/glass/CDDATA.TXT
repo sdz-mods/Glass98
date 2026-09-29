@@ -1,0 +1,30 @@
+Glass98 optional offline CD title database
+=========================================
+
+Source: MusicBrainz core database, https://musicbrainz.org/
+License: CC0 1.0 Universal. See CC0.TXT.
+Only core disc layouts, release/artist names and track titles are included.
+No cover art, ratings, annotations or other supplementary data is included.
+MusicBrainz does not endorse this application.
+
+INSTALL.BAT asks whether to install CDMETA.DAT when it is in the package.
+Choose Yes to enable offline album/track identification. Choose No to skip it;
+an existing database is preserved. No Internet connection or account is needed.
+The database is an optional component, not a requirement for CD playback.
+
+Open a disc in the Audio CD widget. Matching titles appear automatically.
+When several editions match, use the Match ... Next button to choose one.
+Edit titles starts with the selected database entry and saves your own copy
+in CDTITLES.INI. Your entries take precedence over the database. Remove the
+corresponding Album/Artist/Track keys to use database titles again.
+
+Coverage depends on discs submitted to MusicBrainz with track layouts. Some
+discs have no entry, and different releases can have the same layout. Mixed
+audio/data discs are not currently matched automatically. Text that the active
+Windows code page cannot represent may display question marks.
+
+Lookups use an on-disk index and cache the current disc. The full database is
+not loaded into RAM. The database can be removed by deleting CDMETA.DAT while
+Glass98 is stopped; your own CDTITLES.INI entries remain available.
+
+Rebuilding the database is documented in scripts/build.md in the source repo.

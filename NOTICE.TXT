@@ -1,4 +1,4 @@
-Glass98 A00
+Glass98 A01
 
 Glass98 project source, scripts, HTML/CSS/JScript, documentation and the
 bundled solid teal wallpaper are provided under the MIT License. See LICENSE
@@ -27,3 +27,7 @@ Windows, Internet Explorer, Winamp and the Open Watcom compiler distribution
 are not included in the source repository or installation package. They retain
 their respective licenses. Windows and Internet Explorer are runtime
 prerequisites; Winamp is an optional integration. The compiler is a build tool.
+Optional CD metadata is derived from the MusicBrainz core database under
+CC0 1.0 Universal. The optional database package includes CDDATA.TXT and
+CC0.TXT with provenance and license information. MusicBrainz does not endorse
+Glass98. The database license is separate from the application source license.

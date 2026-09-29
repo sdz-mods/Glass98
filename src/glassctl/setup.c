@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifndef TARGET
 #define TARGET "C:\\Glass98"
-static const char *files[] = {"G98SETUP.EXE", "GADGETCTL.EXE", "W98DATA.EXE", "GLASSCTL.EXE", "GLASSPRF.EXE", "RSRC16.EXE", "GLASS.HTM", "SETTINGS.HTM", "WALL.BMP", "WIDGETS.JS", "ADDONS.JS", "THEMES.JS", "MANAGER.JS", "MANAGER.CSS", "PLACEMENT.JS", "DATA.JS", "EXTRA.JS", "RSS.JS", "PING.JS", "ACK.JS", "VERSION.TXT", "INSTALL.BAT", "REMOVE.BAT", "README.TXT", "LICENSE.TXT", "NOTICE.TXT", "WATCOM.TXT", NULL};
+#endif
+static const char *files[] = {"G98SETUP.EXE", "GADGETCTL.EXE", "W98DATA.EXE", "GLASSCTL.EXE", "GLASSPRF.EXE", "RSRC16.EXE", "GLASS.HTM", "SETTINGS.HTM", "WALL.BMP", "WIDGETS.JS", "ADDONS.JS", "UTILITIES.JS", "THEMES.JS", "MANAGER.JS", "MANAGER.CSS", "PLACEMENT.JS", "DATA.JS", "EXTRA.JS", "RSS.JS", "PING.JS", "ACK.JS", "VERSION.TXT", "INSTALL.BAT", "REMOVE.BAT", "README.TXT", "LICENSE.TXT", "NOTICE.TXT", "WATCOM.TXT", NULL};
 static int exists(const char *p)
 {
     DWORD a = GetFileAttributesA(p);
@@ -97,13 +99,85 @@ static int remove_files(void)
     }
     return ok;
 }
+static int choose_catalog(const char *source)
+{
+    char path[MAX_PATH], message[512], magic[8];
+    long size;
+    FILE *file;
+    int answer;
+    if (strlen(source) + 15 >= MAX_PATH)
+        return -1;
+    sprintf(path, "%s\\CDMETA.DAT", source);
+    if (!exists(path))
+        return 0;
+    file = fopen(path, "rb");
+    if (!file)
+        return -1;
+    if (fread(magic, 1, 8, file) != 8 || memcmp(magic, "G98CDDB1", 8) ||
+            fseek(file, 0, SEEK_END) || (size = ftell(file)) < 32)
+    {
+        fclose(file);
+        puts("The optional CD database is invalid.");
+        return -1;
+    }
+    fclose(file);
+    sprintf(message, "Install the optional offline CD title database?\n\n"
+            "MusicBrainz album and track names, with no Internet connection required.\n"
+            "Disk space: %ld MB.\n\nNo keeps any database already installed.", size / 1048576L + (size % 1048576L != 0));
+    answer = MessageBoxA(NULL, message, "Glass98 - Optional CD database", MB_YESNOCANCEL | MB_ICONQUESTION | MB_DEFBUTTON2);
+    return answer == IDCANCEL ? -1 : answer == IDYES;
+}
+
+static int install_catalog(const char *source)
+{
+    char from[MAX_PATH], to[MAX_PATH];
+    const char *notices[] = {"CDDATA.TXT", "CC0.TXT", NULL};
+    int i, previous = exists(TARGET "\\CDMETA.DAT");
+    if (!lstrcmpiA(source, TARGET))
+        return 1;
+    for (i = 0; notices[i]; i++)
+    {
+        sprintf(from, "%s\\%s", source, notices[i]);
+        sprintf(to, TARGET "\\%s", notices[i]);
+        if (exists(to))
+            SetFileAttributesA(to, FILE_ATTRIBUTE_NORMAL);
+        if (!CopyFileA(from, to, FALSE))
+            return 0;
+        SetFileAttributesA(to, FILE_ATTRIBUTE_NORMAL);
+    }
+    sprintf(from, "%s\\CDMETA.DAT", source);
+    if (!CopyFileA(from, TARGET "\\CDMETA.NEW", FALSE))
+    {
+        DeleteFileA(TARGET "\\CDMETA.NEW");
+        return 0;
+    }
+    SetFileAttributesA(TARGET "\\CDMETA.NEW", FILE_ATTRIBUTE_NORMAL);
+    /* Finish copying before replacing an existing catalog; preserve it on failure. */
+    if (previous)
+    {
+        SetFileAttributesA(TARGET "\\CDMETA.BAK", FILE_ATTRIBUTE_NORMAL);
+        DeleteFileA(TARGET "\\CDMETA.BAK");
+        if (!MoveFileA(TARGET "\\CDMETA.DAT", TARGET "\\CDMETA.BAK"))
+            return 0;
+    }
+    if (!MoveFileA(TARGET "\\CDMETA.NEW", TARGET "\\CDMETA.DAT"))
+    {
+        if (previous)
+            MoveFileA(TARGET "\\CDMETA.BAK", TARGET "\\CDMETA.DAT");
+        return 0;
+    }
+    SetFileAttributesA(TARGET "\\CDMETA.BAK", FILE_ATTRIBUTE_NORMAL);
+    DeleteFileA(TARGET "\\CDMETA.BAK");
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     char source[MAX_PATH], temp[MAX_PATH], stage[MAX_PATH], from[MAX_PATH], to[MAX_PATH], *raw, *p;
     HANDLE lock;
     OSVERSIONINFOA os;
     DWORD length;
-    int i, install, result = 1, staged = 0;
+    int i, install, catalog = 0, result = 1, staged = 0;
     (void)argc;
     (void)argv;
     memset(&os, 0, sizeof(os));
@@ -165,6 +239,9 @@ int main(int argc, char **argv)
         result = 0;
         goto done;
     }
+    catalog = choose_catalog(source);
+    if (catalog < 0)
+        goto done;
     length = GetTempPathA(sizeof(temp), temp);
     if (!length || length > MAX_PATH - 30 || !GetTempFileNameA(temp, "G98", 0, stage))
         goto done;
@@ -208,6 +285,11 @@ int main(int argc, char **argv)
             goto done;
         }
         SetFileAttributesA(to, FILE_ATTRIBUTE_NORMAL);
+    }
+    if (catalog && !install_catalog(source))
+    {
+        puts("Could not install the optional CD database. Check free disk space and retry, or choose No.");
+        goto done;
     }
     if (!run(TARGET, "GLASSCTL.EXE", "seed \"" TARGET "\\GLASS.HTM\""))
         goto done;

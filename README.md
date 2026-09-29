@@ -26,7 +26,7 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | Event countdown | Days remaining until, or elapsed since, a selected date |
 | Volume | Master, Wave, CD and MIDI volume/mute controls where supported |
 | Winamp | Track title, playback controls and volume for compatible running Winamp instances |
-| Audio CD | Drive selection, current track/count and playback controls for physical audio CDs |
+| Audio CD | Physical CD playback, current track/count, optional offline MusicBrainz titles and editable local titles |
 | Quick Launch | Six labeled program, file, folder or shortcut slots |
 | Places | Four favorite folders and eight recent documents |
 | Removable media | Media status, open drive and CD eject |
@@ -108,6 +108,21 @@ global refresh override. Under **Rendering**, enable **Disable transparency
 Saved opacity values are retained; uncheck it to restore transparency.
 The **Themes** tab selects presets, saves custom themes,
 and generates colors and opacity from an image.
+
+The package can include an optional **offline CD database** derived from
+MusicBrainz's CC0 core data. Setup offers to install it and shows the required
+disk space. Album and track names are matched locally from the disc's track
+layout; no connection or account is required. Lookups use an on-disk index and
+cache the current disc, keeping memory use low. Where multiple releases match,
+the CD widget lets you cycle through them. Coverage is not universal; mixed
+audio/data discs currently require manual titles. See the
+[CD database manual](packaging/glass/CDDATA.TXT).
+
+Your own CD album and track names are stored locally in `CDTITLES.INI` and
+override database titles. With an audio CD
+opened, click **Edit titles**, edit its album/artist and numbered tracks in
+Notepad, then save. The widget reads those titles when that disc is inserted.
+No online database or additional library is required.
 
 ## Build from source
 

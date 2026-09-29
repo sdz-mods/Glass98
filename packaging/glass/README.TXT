@@ -1,4 +1,4 @@
-Glass98 - A00
+Glass98 - A01
 
 Requires Windows 98 SE, Internet Explorer 6 SP1, High/True Color.
 The widgets are HTML Active Desktop wallpaper, behind normal windows.
@@ -133,7 +133,15 @@ Winamp: classic Winamp 2.x-compatible IPC, track/window title, transport,
 and volume. Winamp must already be running.
 Audio CD: choose a CD drive, Open it, then control physical audio CDs via
 MCI. Shows current track and track count. Requires a working CD audio driver
-and audio hardware/path.
+and audio hardware/path. Edit titles opens CDTITLES.INI in Notepad with a
+section for the current disc: Album, Artist, Track1, Track2, and so on. Save it
+to update the widget. Titles are local; no online lookup or extra library is
+needed. Keep CDTITLES.INI to preserve your disc collection.
+If the package includes CDMETA.DAT, setup offers to install the optional
+offline MusicBrainz title database and shows its disk-space requirement.
+Titles are then matched locally; no Internet connection is used. Your own
+INI titles override database entries. Multiple matches can be selected with
+the Match ... Next button. See CDDATA.TXT for coverage and license details.
 Quick Launch: six compact file/program/shortcut/folder slots with optional
 labels. Direct files start with their containing folder as working directory.
 Shortcuts retain their own Start in directory. Use .lnk files for arguments

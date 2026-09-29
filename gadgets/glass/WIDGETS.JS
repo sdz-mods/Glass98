@@ -1024,11 +1024,13 @@ function render(i) {
             'device/winamp/volume/' + Math.min(100, volume + 10), !available) + '</div>');
     }
     if (i == 9) {
-        s = detail((cdState || 'Audio CD unavailable') + (cdTrack > 0 ? ' / Track ' + cdTrack + (cdTracks > 0 ? ' of ' +
+        s = cdDescription() + detail((cdState || 'Audio CD unavailable') + (cdTrack > 0 ? ' / Track ' + cdTrack + (
+            cdTracks > 0 ? ' of ' +
             cdTracks : '') : '')) + '<div class="buttons">';
         if (savedOptions.cd) s += button('Open ' + savedOptions.cd + ':', 'device/cd/open/' + savedOptions.cd);
         s += button('Play', 'device/cd/play') + button('Pause', 'device/cd/pause') + button('Next', 'device/cd/next') +
-            button('Stop', 'device/cd/stop') + button('Eject', 'device/cd/eject') + '</div>' + detail(actionStatus ||
+            button('Stop', 'device/cd/stop') + button('Eject', 'device/cd/eject') + cdEditButton() + '</div>' + detail(
+                actionStatus ||
                 '');
         h = 145;
     }

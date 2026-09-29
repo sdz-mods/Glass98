@@ -7,6 +7,7 @@
 #include <string.h>
 #include "extras.h"
 #include "addons.h"
+void details_cd(FILE*, const char*, int, int, int);
 static char root[MAX_PATH], ini[MAX_PATH];
 static HANDLE stopEvent, wakeEvent, worker;
 static LONG inspectRequested;
@@ -367,6 +368,7 @@ static void devices(FILE *f)
         mciSendStringA("status w98cd number of tracks", totalText, sizeof(totalText), NULL);
     }
     fprintf(f, ";var cdTrack=%d;var cdTracks=%d;", atoi(trackText), atoi(totalText));
+    details_cd(f, root, cdEnabled && cdopen, atoi(trackText), atoi(totalText));
     fputs("var actionStatus=", f);
     js_string(f, actionStatus);
     fputs(";\n", f);
