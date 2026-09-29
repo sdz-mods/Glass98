@@ -9,7 +9,7 @@ typedef struct
     MEMORYSTATUS memory;
     char vendor[13], brand[49];
     DWORD family, model, stepping, processors;
-    DWORD frequencyMHz, frequencyKind; /* 1 base, 2 startup estimate, 3 TSC reference */
+    DWORD frequencyMHz, frequencyKind; /* 1 base, 2 startup estimate, 3 TSC reference; 4-6 cached equivalents */
 } TELEMETRY;
 void telemetry_init(TELEMETRY *state);
 void telemetry_sample(TELEMETRY *state);

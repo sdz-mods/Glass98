@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "telemetry.h"
+#include "cpucache.h"
 #ifdef W98_SUITE
 #include "extras.h"
 #endif
@@ -101,6 +102,7 @@ static void updateCore(void)
         if (coreRunning != 1)
         {
             telemetry_init(&sample);
+            cpu_frequency_cache(&sample, directory);
             coreRunning = 1;
         }
         writeSnapshot();
@@ -232,6 +234,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     updateCore();
 #else
     telemetry_init(&sample);
+    cpu_frequency_cache(&sample, directory);
     writeSnapshot();
 #endif
     if (!SetTimer(window, 1, 1000, NULL))

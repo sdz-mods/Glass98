@@ -439,3 +439,9 @@ run("extraTime=Date.now();cdState='playing';cdTrack=8;cdTracks=8;render(9)");
 assert.match(elements.flow9.innerHTML, /device\/cd\/prev/);
 assert.match(elements.flow9.innerHTML, /device\/cd\/next/);
 console.log('PASS: CD previous and next controls');
+
+run("snapshot='0|0|1024|512|0|0|0|0|CPU|vendor|6|3|2|1|300|3';sampleTime=Date.now();render(0)");
+assert.match(elements.flow0.innerHTML, /height:15px;white-space:nowrap;overflow:hidden.*TSC reference/);
+run("snapshot='0|0|1024|512|0|0|0|0|CPU|vendor|6|3|2|1|0|0';render(0)");
+assert.match(elements.flow0.innerHTML, /height:15px;white-space:nowrap;overflow:hidden.*CPU frequency unavailable/);
+assert.equal(run("cpuFrequency(('0|0|0|0|0|0|0|0|CPU|vendor|6|3|2|1|300|5').split('|'))"), 'Startup estimate: ~300 MHz (cached)');

@@ -734,9 +734,11 @@ function uptime(s) {
 
 function cpuFrequency(f) {
     if (!f || f.length < 16 || !(Number(f[14]) >= 10 && Number(f[14]) <= 20000)) return '';
-    var kind = Number(f[15]);
-    return kind == 1 ? 'Base frequency: ' + f[14] + ' MHz' : kind == 2 ? 'Startup estimate: ~' + f[14] + ' MHz' :
+    var kind = Number(f[15]), cached = kind >= 4 && kind <= 6, text;
+    if (cached) kind -= 3;
+    text = kind == 1 ? 'Base frequency: ' + f[14] + ' MHz' : kind == 2 ? 'Startup estimate: ~' + f[14] + ' MHz' :
         kind == 3 ? 'TSC reference: ~' + f[14] + ' MHz' : '';
+    return text ? text + (cached ? ' (cached)' : '') : '';
 }
 
 function core() {
@@ -926,8 +928,9 @@ function render(i) {
         j, p, list, used, total, free, v, d, mode, nets, rx = 0,
         tx = 0;
     if (i == 0) {
-        s = section('CPU', meter(f ? Number(f[0]) : -1, i) + detail(f ? f[8] : 'CPU unavailable') + (cpuFrequency(f) ?
-            detail(cpuFrequency(f)) : ''));
+        s = section('CPU', meter(f ? Number(f[0]) : -1, i) + detail(f ? f[8] : 'CPU unavailable') +
+            '<div class="detail" style="height:15px;white-space:nowrap;overflow:hidden">' +
+            esc(cpuFrequency(f) || 'CPU frequency unavailable') + '</div>');
         total = f ? Math.round(Number(f[2]) / 1024) : 0;
         free = f ? Math.round(Number(f[3]) / 1024) : 0;
         used = total - free;

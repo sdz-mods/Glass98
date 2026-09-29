@@ -127,6 +127,12 @@ opened, click **Edit titles**, edit its album/artist and numbered tracks in
 Notepad, then save. The widget reads those titles when that disc is inserted.
 No online database or additional library is required.
 
+The **System** widget measures CPU frequency once per collector process and
+saves successful readings. If calibration fails on a later startup, it uses a
+saved reading for the same detected CPU, marked **cached**. If no matching
+reading exists, it displays **CPU frequency unavailable**. These values are
+not live turbo or throttling measurements.
+
 ## Build from source
 
 Build on a modern Windows host using PowerShell and Open Watcom 2.0. Install the
