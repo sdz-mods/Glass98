@@ -278,6 +278,9 @@ function photoFit(img) {
     var r = Math.min((width - 26) / img._naturalW, 180 / img._naturalH, 1);
     img.style.width = Math.max(1, Math.round(img._naturalW * r)) + 'px';
     img.style.height = Math.max(1, Math.round(img._naturalH * r)) + 'px';
+    img.style.left = Math.round((width - 26 - img._naturalW * r) / 2) + 'px';
+    img.style.top = Math.round((180 - img._naturalH * r) / 2) + 'px';
+    img.style.visibility = 'visible';
     scheduleFit(19);
 }
 
@@ -357,10 +360,11 @@ function renderMore(i, ok) {
         else {
             photoIndex %= a.length;
             p = a[photoIndex];
-            s = '<div style="text-align:center"><img id="photoImage" alt="" src="' + esc(fileURL(p)) +
+            s = '<div style="position:relative;height:180px;overflow:hidden;text-align:center"><img id="photoImage" style="position:absolute;visibility:hidden" alt="" src="' +
+                esc(fileURL(p)) +
                 '" onload="photoFit(this)" onerror="photoError(this)"><div class="detail" id="photoError"></div></div><div class="buttons">' +
                 localButton('Previous', 'nextPhoto(-1)') + localButton('Next', 'nextPhoto(1)') + ' ' + (photoIndex +
-                1) + ' / ' + a.length + '</div>';
+                    1) + ' / ' + a.length + '</div>';
         }
     }
     if (i == 20) {

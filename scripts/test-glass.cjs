@@ -416,3 +416,12 @@ run(
 "awaiting='';inFlight='';optionQueue=[];savedOptions.disableAlpha='1';el('disableAlpha').checked=false;applySettings('save')");
 assert.ok(run("optionQueue.indexOf('options/disableAlpha=30')>=0"));
 console.log('PASS: Desktop rendering toggle saves without replacing widget opacity');
+
+// Oversized images are clipped while loading; their dimensions never determine frame height.
+run("savedOptions.photo0='C:\\large.bmp';render(19)");
+assert.match(elements.flow19.innerHTML, /height:180px;overflow:hidden/);
+assert.match(elements.flow19.innerHTML, /position:absolute;visibility:hidden/);
+run("var largePhoto={width:4000,height:3000,style:{}};photoFit(largePhoto)");
+assert.equal(run('largePhoto.style.height'), '180px');
+assert.equal(run('largePhoto.style.visibility'), 'visible');
+console.log('PASS: stable picture viewport while loading oversized images');
