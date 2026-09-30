@@ -1,4 +1,4 @@
-Glass98 A01
+Glass98 A02
 
 Glass98 project source, scripts, HTML/CSS/JScript, documentation and the
 bundled solid teal wallpaper are provided under the MIT License. See LICENSE

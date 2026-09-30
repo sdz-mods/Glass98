@@ -1,4 +1,4 @@
-Glass98 - A01
+Glass98 - A02
 
 Requires Windows 98 SE, Internet Explorer 6 SP1, High/True Color.
 The widgets are HTML Active Desktop wallpaper, behind normal windows.
