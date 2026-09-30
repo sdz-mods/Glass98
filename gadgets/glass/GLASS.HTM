@@ -435,7 +435,7 @@ var actionAck = '',
     savedOptions = {},
     settingsURL = 'SETTINGS.HTM';
 </script>
-<script src="THEMES.JS?v=@@VERSION@@"></script><script src="ADDONS.JS?v=@@VERSION@@"></script><script src="UTILITIES.JS?v=@@VERSION@@"></script><script id="feed" src="DATA.JS"></script><script id="extra" src="EXTRA.JS"></script><script id="prefs" src="PREFS.JS"></script><script id="ackfeed" src="ACK.JS"></script><script id="rssfeed" src="RSS.JS"></script>
+<script src="THEMES.JS?v=@@VERSION@@"></script><script src="ADDONS.JS?v=@@VERSION@@"></script><script src="UTILITIES.JS?v=@@VERSION@@"></script><script id="runstate" src="RUNSTATE.JS"></script><script id="feed" src="DATA.JS"></script><script id="extra" src="EXTRA.JS"></script><script id="prefs" src="PREFS.JS"></script><script id="ackfeed" src="ACK.JS"></script><script id="rssfeed" src="RSS.JS"></script>
 </head><body scroll="no">
 <iframe id="commandSink" name="commandSink" src="about:blank" style="position:absolute;left:-100px;top:-100px;width:1px;height:1px"></iframe>
 <div id="backdrop"><img id="wallpaper"></div><div id="widgets"></div>
@@ -451,6 +451,7 @@ var actionAck = '',
 </div>
 </div><div id="desktopTab"><h3>Desktop</h3><div class="help">Layout, wallpaper and shared refresh settings.</div>
 <fieldset><legend>Layout</legend><table class="formrows"><tr><td class="formlabel">Shared width</td><td><input id="width" class="num"> pixels (240-600)</td></tr></table><p><label><input id="snap" type="checkbox"> Snap edges</label> <label><input id="locked" type="checkbox"> Lock positions</label></p></fieldset>
+<fieldset><legend>Fullscreen DOS</legend><p><label><input id="pauseDos" type="checkbox" checked> Pause during fullscreen DOS</label></p><div class="help">Pause data collection and widget refreshes while a DOS session uses the full screen. Resume automatically when you return to Windows. Uncheck to test widgets with DOS games running.</div></fieldset>
 <fieldset><legend>Rendering</legend><p><label><input id="disableAlpha" type="checkbox"> Disable transparency (opaque widgets)</label></p><div class="help">Use solid backgrounds for slower systems. Removes alpha blending; keeps your saved opacity settings. Applies to all widgets and the theme preview.</div></fieldset>
 <fieldset><legend>Global refresh</legend><p><label><input id="useGlobal" type="checkbox"> Override all widget intervals</label></p><p>Refresh every <input id="globalSeconds" class="num"> seconds (1-3600)</p><div class="help">Uncheck to use each widget's own interval. Controls respond immediately in either mode.</div></fieldset>
 <fieldset><legend>Wallpaper</legend><select id="wallmode"><option>Center</option><option>Tile</option><option>Stretch</option><option>Fit</option></select> <button id="chooseWallpaper" onclick="applySettings('browse')">Choose image...</button></fieldset>
@@ -464,6 +465,7 @@ var actionAck = '',
 </div><div id="managerFooter" class="footer"><button id="applyButton" onclick="applySettings('save')">Apply</button> <button id="arrangeButton" onclick="resetLayout()">Arrange widgets</button> <button onclick="safeClose()">Close</button><div id="notice">Changes apply to the selected widget.</div></div>
 </div>
 <script>
+if (typeof desktopPaused == 'undefined') desktopPaused = 0;
 var settingsView = location.search == '?settings';
 </script><script id="pingfeed" src="PING.JS"></script><script src="WIDGETS.JS?v=@@VERSION@@"></script>
 <div id="choicePopup"></div>

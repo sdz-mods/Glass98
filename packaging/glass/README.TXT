@@ -108,6 +108,17 @@ one second. Disk capacity queries follow the effective refresh interval;
 changing selected letters triggers an immediate rescan.
 
 WIDGETS
+FULLSCREEN DOS
+Enabled by default. To turn it off, uncheck "Pause during fullscreen DOS" on
+the manager's Desktop tab and apply. No restart is needed.
+Glass98 automatically pauses collection, widget redraws and scheduled feed
+requests while a fullscreen DOS session is active. Returning to Windows
+resumes normal operation. Windowed DOS sessions keep widgets running.
+A small 250 ms state check remains active to detect the return.
+An operation already in progress may finish when the pause begins. CD audio
+playback is left alone. Timers continue to track elapsed time and update when
+you return; performance graph history restarts to avoid misleading gaps.
+
 System: CPU and RAM bars, CPU name, integer MB memory figures, display
 adapter/mode, Windows version and uptime. Driver-supplied GPU names and
 refresh rates may be incomplete. Uptime wraps after about 49.7 days.

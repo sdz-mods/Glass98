@@ -13,6 +13,7 @@ void details_cd(FILE*, const char*, int, int, int);
 static char root[MAX_PATH], ini[MAX_PATH];
 static HANDLE stopEvent, wakeEvent, worker;
 static LONG inspectRequested;
+static volatile LONG collectorPaused;
 static CRITICAL_SECTION actionLock;
 static char queuedAction[128];
 static int shuttingDown;
@@ -530,6 +531,12 @@ int extra_core_enabled(void)
     refresh_seconds(12, &graphs);
     return system || graphs;
 }
+void extra_pause(int paused)
+{
+    InterlockedExchange(&collectorPaused, paused != 0);
+    if (wakeEvent)
+        SetEvent(wakeEvent);
+}
 void extra_refresh(void)
 {
     if (wakeEvent)
@@ -538,6 +545,8 @@ void extra_refresh(void)
 int device_action(const char *s)
 {
     int result;
+    if (collectorPaused)
+        return 0;
     if (!strcmp(s, "inspect"))
     {
         InterlockedExchange(&inspectRequested, 1);
@@ -581,6 +590,16 @@ static DWORD WINAPI collect(void *unused)
     }
     do
     {
+        if (collectorPaused)
+        {
+            addons_stop();
+            for (i = 0; i < 32; i++)
+                previous[i].tick = 0;
+            lastDisk = 0;
+            /* Leave CD playback alone: a game may be using physical CD audio. */
+            waitResult = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+            continue;
+        }
         EnterCriticalSection(&actionLock);
         strcpy(action, queuedAction);
         queuedAction[0] = 0;

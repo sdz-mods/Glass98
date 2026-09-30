@@ -53,6 +53,7 @@ python scripts/test-placement.py
 .\scripts\test-autotheme.ps1
 .\scripts\test-cdshutdown.ps1
 .\scripts\test-desktop-state.ps1
+.\scripts\test-dosquiet.ps1
 ```
 
 Native test executables and scratch files stay in `build`. Test helpers operate

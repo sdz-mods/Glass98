@@ -3,7 +3,7 @@ var managerPage = 'widget',
     managerListStamp = '';
 
 function managerResize() {
-    if (!settingsView) return;
+    if (!settingsView || desktopPaused) return;
     var w = document.body.clientWidth,
         h = document.body.clientHeight,
         compact = w < 680,
@@ -50,6 +50,7 @@ function managerChoose(i) {
 }
 
 function managerSelection() {
+    if (desktopPaused) return;
     var i = Number(el('target').value) || 0,
         j, stamp = String(i),
         s = '';
@@ -67,7 +68,7 @@ function managerSelection() {
 }
 
 function managerPreview() {
-    if (!settingsView) return;
+    if (!settingsView || desktopPaused) return;
     var p = panels[0],
         low = hexColor(el('meterLow').value, '62D98B'),
         mid = hexColor(el('meterMid').value, 'FFD166'),

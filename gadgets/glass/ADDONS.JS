@@ -275,7 +275,7 @@ function photoFit(img) {
         img._naturalW = img.width;
         img._naturalH = img.height;
     }
-    if (!img._naturalW || !img._naturalH) return;
+    if (desktopPaused || !img._naturalW || !img._naturalH) return;
     var r = Math.min((width - 26) / img._naturalW, 180 / img._naturalH, 1);
     img.style.width = Math.max(1, Math.round(img._naturalW * r)) + 'px';
     img.style.height = Math.max(1, Math.round(img._naturalH * r)) + 'px';

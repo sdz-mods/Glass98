@@ -49,3 +49,12 @@ Snapshot strings escape JavaScript metacharacters. Core snapshot strings also
 replace control and non-ASCII characters. Completed temporary files are closed
 before publication. Win9x has no ReplaceFile, so publication uses delete/move;
 the desktop tolerates a missing snapshot and retries on its next poll.
+
+Fullscreen DOS detection uses the foreground Win98 `tty` window's iconic state
+and empty client rectangle. A transient missing foreground preserves the last
+state. The writer checks every 250 ms and publishes `RUNSTATE.JS` only on
+startup or a state transition. While paused, the extra collector sleeps on
+its stop/wake events, CPU and file-activity counters are stopped, and the
+resource helper exits. CD ownership is retained without issuing a stop command.
+The desktop reads only `RUNSTATE.JS` while paused and resets graph history on
+resume. Existing API calls finish cooperatively; threads are not suspended.

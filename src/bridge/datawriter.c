@@ -6,12 +6,58 @@
 #include "cpucache.h"
 #ifdef W98_SUITE
 #include "extras.h"
+#include "dosquiet.h"
+#define WRITER_INTERVAL 250
+#else
+#define WRITER_INTERVAL 1000
 #endif
 
 static char directory[MAX_PATH], destination[MAX_PATH], temporary[MAX_PATH];
 static TELEMETRY sample;
 #ifdef W98_SUITE
-static int coreRunning = -1;
+static int coreRunning = -1, quietMode, quietPublished = -1;
+static DWORD corePollTick;
+static int pauseDos = 1;
+static void loadQuietOption(void)
+{
+    char path[MAX_PATH];
+    sprintf(path, "%s\\WIDGETS.INI", directory);
+    pauseDos = GetPrivateProfileIntA("Options", "pauseDos", 1, path) != 0;
+}
+static void updateQuiet(void);
+static void publishQuiet(void)
+{
+    char path[MAX_PATH], temporaryPath[MAX_PATH];
+    FILE *file;
+    int ok;
+    if (quietPublished == quietMode)
+        return;
+    sprintf(path, "%s\\RUNSTATE.JS", directory);
+    sprintf(temporaryPath, "%s\\RUNSTATE.TMP", directory);
+    file = fopen(temporaryPath, "wb");
+    if (!file)
+        return;
+    ok = fprintf(file, "var desktopPaused=%d;\r\n", quietMode) > 0;
+    if (fclose(file))
+        ok = 0;
+    if (ok && (DeleteFileA(path) || GetLastError() == ERROR_FILE_NOT_FOUND) && MoveFileA(temporaryPath, path))
+        quietPublished = quietMode;
+}
+static void updateQuiet(void)
+{
+    int state = pauseDos ? dos_fullscreen() : 0;
+    if (state >= 0 && state != quietMode)
+    {
+        quietMode = state;
+        extra_pause(quietMode);
+        if (quietMode)
+        {
+            telemetry_stop(&sample);
+            coreRunning = -1;
+        }
+    }
+    publishQuiet();
+}
 static void updateCore(void);
 #endif
 static const char *windowClass = "W98WidgetsDataWriter";
@@ -58,6 +104,8 @@ static LRESULT CALLBACK writerWindow(HWND window, UINT message, WPARAM wp, LPARA
 #ifdef W98_SUITE
     if (message == WM_APP + 1)
     {
+        loadQuietOption();
+        updateQuiet();
         extra_refresh();
         updateCore();
         return 0;
@@ -74,7 +122,9 @@ static LRESULT CALLBACK writerWindow(HWND window, UINT message, WPARAM wp, LPARA
     if (message == WM_TIMER)
     {
 #ifdef W98_SUITE
-        updateCore();
+        updateQuiet();
+        if (coreRunning < 0 || GetTickCount() - corePollTick >= 1000)
+            updateCore();
 #else
         writeSnapshot();
 #endif
@@ -97,6 +147,9 @@ static LRESULT CALLBACK writerWindow(HWND window, UINT message, WPARAM wp, LPARA
 #ifdef W98_SUITE
 static void updateCore(void)
 {
+    if (quietMode)
+        return;
+    corePollTick = GetTickCount();
     if (extra_core_enabled())
     {
         if (coreRunning != 1)
@@ -230,6 +283,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     }
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 #ifdef W98_SUITE
+    loadQuietOption();
+    updateQuiet();
     extra_start(directory);
     updateCore();
 #else
@@ -237,7 +292,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     cpu_frequency_cache(&sample, directory);
     writeSnapshot();
 #endif
-    if (!SetTimer(window, 1, 1000, NULL))
+    if (!SetTimer(window, 1, WRITER_INTERVAL, NULL))
     {
         telemetry_stop(&sample);
         DestroyWindow(window);
@@ -252,6 +307,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     KillTimer(window, 1);
 #ifdef W98_SUITE
     extra_stop();
+    quietMode = 0;
+    publishQuiet();
 #endif
     telemetry_stop(&sample);
     DestroyWindow(window);

@@ -438,6 +438,11 @@ run(
 );
 assert.ok(run("optionQueue.indexOf('options/disableAlpha=30')>=0"));
 console.log('PASS: Desktop rendering toggle saves without replacing widget opacity');
+run("awaiting='';inFlight='';optionQueue=[];delete savedOptions.pauseDos;el('pauseDos').checked=false;applySettings('save')");
+assert.ok(run("optionQueue.indexOf('options/pauseDos=30')>=0"), 'default-enabled DOS pause can be disabled');
+run("awaiting='';inFlight='';optionQueue=[];savedOptions.pauseDos='0';el('pauseDos').checked=true;applySettings('save')");
+assert.ok(run("optionQueue.indexOf('options/pauseDos=31')>=0"), 'DOS pause can be enabled again');
+console.log('PASS: fullscreen DOS pause toggle saves both directions');
 
 // Utility arithmetic rejects script input and handles precedence and invalid values.
 assert.equal(run("calculate('2+3*4')"), 14);
@@ -542,3 +547,31 @@ assert.match(elements.flow22.innerHTML, /id="windowsScheme" value="5768656174"/)
 run("windowsSchemes=[];render(22)");
 assert.doesNotMatch(elements.flow22.innerHTML, /WINDOWS APPEARANCE/);
 console.log('PASS: cached CPU frequency, native scheme choices and automatic paging capacity meter');
+
+run("desktopPaused=1;inFlight='';awaiting='';history=[[1,2,3]];lastDraw=[123];fastRunning=true");
+const frozenSystem = elements.flow0.innerHTML;
+const frozenExtra = elements.extra.src;
+const frozenPrefs = elements.prefs.src;
+run('tick();render(0);pollFast();pollDesktop()');
+assert.match(elements.runstate.src, /^RUNSTATE\.JS\?v=/);
+assert.equal(elements.flow0.innerHTML, frozenSystem);
+assert.equal(elements.extra.src, frozenExtra);
+assert.equal(elements.prefs.src, frozenPrefs);
+assert.equal(run('history.length'), 1);
+assert.equal(run('fastRunning'), false);
+run('desktopPaused=0;runtimePaused()');
+assert.equal(run('history.length'), 0);
+assert.equal(run('lastDraw.length'), 0);
+assert.equal(run('pausedSince'), 0);
+assert.match(html, /id="runstate" src="RUNSTATE.JS"/);
+console.log('PASS: DOS pause freezes rendering, graphs and fast polling; resume clears sampling history');
+
+run("desktopPaused=0;pausedSince=0;lastDesktopPoll=Date.now()");
+elements.prefs.src = 'normal-poll-not-due';
+run('pollDesktop()');
+assert.equal(elements.prefs.src, 'normal-poll-not-due');
+assert.match(elements.runstate.src, /^RUNSTATE\.JS\?v=/);
+run('lastDesktopPoll=0;pollDesktop()');
+assert.match(elements.prefs.src, /^PREFS\.JS\?v=/);
+assert.match(fs.readFileSync(path.join(__dirname, '../gadgets/glass/WIDGETS.JS'), 'utf8'), /setInterval\(pollDesktop, 250\)/);
+console.log('PASS: 250 ms runtime checks preserve the one-second normal polling interval');

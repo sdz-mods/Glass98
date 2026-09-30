@@ -123,6 +123,22 @@ int main(void)
     assert(WaitForSingleObject(openedEvent, 5000) == WAIT_OBJECT_0);
     assert(device_action("cd/play"));
     assert(WaitForSingleObject(playedEvent, 5000) == WAIT_OBJECT_0);
+    /* Pause the live worker without stopping CD audio or accepting new actions. */
+    extra_pause(1);
+    Sleep(500);
+    {
+        char frozen[2048];
+        strcpy(frozen, trace);
+        assert(!device_action("cd/next"));
+        Sleep(1200);
+        assert(!strcmp(frozen, trace));
+        assert(cdopen);
+    }
+    extra_pause(0);
+    ResetEvent(playedEvent);
+    assert(device_action("cd/play"));
+    assert(WaitForSingleObject(playedEvent, 5000) == WAIT_OBJECT_0);
+    extra_pause(1);
     extra_stop();
     assert(owner && owner != GetCurrentThreadId());
     assert(strlen(trace) >= 31);

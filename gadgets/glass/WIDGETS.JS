@@ -208,7 +208,32 @@ function drawAll() {
     for (var i = 0; i < ids.length; i++) draw(i);
 }
 
+var pausedSince = 0, lastDesktopPoll = 0;
+function runtimePaused() {
+    var now = (new Date()).getTime();
+    if (desktopPaused) {
+        if (!pausedSince) pausedSince = now;
+        fastRunning = false;
+        return true;
+    }
+    if (pausedSince) {
+        if (inFlight) sentAt += now - pausedSince;
+        if (awaiting) waitSince += now - pausedSince;
+        if (dailyPending) dailyPending.at += now - pausedSince;
+        pausedSince = 0;
+        lastDesktopPoll = 0;
+        pendingDevice = null;
+        fastUntil = 0;
+        history = [];
+        graphState = null;
+        graphSerial++;
+        lastDraw = [];
+    }
+    return false;
+}
+
 function pollFast() {
+    if (runtimePaused()) return;
     var v = (new Date()).getTime();
     if (v > fastUntil) {
         fastRunning = false;
@@ -224,6 +249,7 @@ function pollFast() {
 }
 
 function command(s) {
+    if (runtimePaused()) return;
     if (s.indexOf('device/') == 0) {
         var a = s.split('/'),
             i = a[1] == 'volume' ? 7 : a[1] == 'winamp' ? 8 : a[1] == 'cd' ? 9 : -1;
@@ -282,6 +308,7 @@ function showTab(name) {
 }
 
 function fitContent(i) {
+    if (runtimePaused()) return;
     var b = el('b' + i),
         flow = el('flow' + i),
         head = el('h' + i),
@@ -638,6 +665,8 @@ function applySettings(action) {
     if (v != String(savedOptions.globalSeconds || 0)) queueOption('globalSeconds', v);
     v = el('disableAlpha').checked ? '1' : '0';
     if (v != String(savedOptions.disableAlpha || 0)) queueOption('disableAlpha', v);
+    v = el('pauseDos').checked ? '1' : '0';
+    if (v != (savedOptions.pauseDos == '0' ? '0' : '1')) queueOption('pauseDos', v);
     saveMore(i);
     drawAll();
     fitWallpaper();
@@ -674,6 +703,7 @@ function setWallpaper(path) {
 }
 
 function fitWallpaper() {
+    if (runtimePaused()) return;
     var img = el('wallpaper'),
         back = el('backdrop'),
         b = bounds(),
@@ -915,6 +945,7 @@ function updateGraphs() {
 }
 
 function render(i) {
+    if (runtimePaused()) return;
     if (choiceMenu && (i == 22 || i == 24)) return;
     if (i == 12) {
         var graphFlow = el('flow12');
@@ -1077,6 +1108,7 @@ function render(i) {
 }
 
 function tick() {
+    if (runtimePaused()) return;
     var now = (new Date()).getTime(),
         i, f, nets, total = 0,
         v, stamp = '',
@@ -1207,6 +1239,7 @@ if (settingsView) {
     el('locked').checked = locked;
     el('wallmode').selectedIndex = wallmode;
     el('disableAlpha').checked = savedOptions.disableAlpha == '1';
+    el('pauseDos').checked = savedOptions.pauseDos != '0';
     el('useGlobal').checked = Number(savedOptions.globalSeconds) > 0;
     el('globalSeconds').value = savedOptions.globalSeconds && Number(savedOptions.globalSeconds) > 0 ? savedOptions
         .globalSeconds : 2;
@@ -1218,8 +1251,12 @@ if (settingsView) {
     managerInit();
 } else setWallpaper(savedWallpaper);
 tick();
-window.setInterval(function() {
+function pollDesktop() {
     var v = (new Date()).getTime();
+    el('runstate').src = 'RUNSTATE.JS?v=' + v;
+    if (runtimePaused()) return;
+    if (lastDesktopPoll && v - lastDesktopPoll < 1000) return;
+    lastDesktopPoll = v;
     if (!settingsView && (panels[0].on || panels[12].on)) el('feed').src = 'DATA.JS?v=' + v;
     var needExtra = settingsView || panels[0].on || panels[1].on || panels[2].on || panels[6].on || panels[7]
         .on || panels[8].on || panels[9].on || panels[12].on || panels[13].on || panels[14].on || panels[17]
@@ -1230,4 +1267,5 @@ window.setInterval(function() {
     if (panels[11].on) el('rssfeed').src = 'RSS.JS?v=' + v;
     if (inFlight || optionQueue.length) el('ackfeed').src = 'ACK.JS?v=' + v;
     window.setTimeout(tick, 200);
-}, 1000);
+}
+window.setInterval(pollDesktop, 250);

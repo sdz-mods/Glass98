@@ -49,6 +49,7 @@ They sit on the desktop alongside your icons, behind normal application windows.
 - Automatic theme generation from your selected wallpaper.
 - A widget manager for adding, removing and configuring widgets.
 - Collection of optional data stops when no enabled widget needs it.
+- Automatic pause while a fullscreen DOS session is active.
 
 ## How it works
 
@@ -62,6 +63,16 @@ engine. Its JavaScript periodically reads those files and updates the widgets
 at their configured refresh intervals; CSS controls their appearance. Native
 helpers handle settings and actions such as volume changes and launching
 programs.
+
+When a fullscreen DOS session takes over the screen, Glass98 pauses telemetry
+collection, widget refreshes and scheduled feed requests. It resumes when you
+return to Windows, including after closing the DOS session or switching back
+to the desktop. Windowed DOS sessions do not trigger the pause. A lightweight
+250 ms state check remains active so the helpers and desktop can
+resume automatically. An operation already in progress may finish as the
+pause begins. Existing CD playback is left alone. This is enabled by default;
+uncheck **Pause during fullscreen DOS** on the widget manager's **Desktop** tab
+and apply to keep widgets running during fullscreen DOS sessions. No restart is needed.
 
 ## Requirements
 

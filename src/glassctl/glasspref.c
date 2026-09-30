@@ -171,10 +171,10 @@ static void migrate(char *config)
     }
 }
 #include "layouts.h"
-static const char *optionKeys[] = {"drives", "adapters", "clock", "reminders", "rss", "rssminutes", "cd", "launch0", "launch1", "launch2", "launch3", "launch4", "launch5", "label0", "label1", "label2", "label3", "label4", "label5", "globalSeconds", "worlds", "notes", "timerMinutes", "timerMode", "timerState", "timerSound", "eventName", "eventDate", "pingHost", "photoSeconds", "photo0", "photo1", "photo2", "photo3", "photo4", "photo5", "fav0", "fav1", "fav2", "fav3", "meterColors", "meterLow", "meterMid", "meterHigh", "disableAlpha", "dailyItems", "dailyState", "characterFont", "wall0", "wall1", "wall2", "wall3", "wall4", "wall5", NULL};
+static const char *optionKeys[] = {"drives", "adapters", "clock", "reminders", "rss", "rssminutes", "cd", "launch0", "launch1", "launch2", "launch3", "launch4", "launch5", "label0", "label1", "label2", "label3", "label4", "label5", "globalSeconds", "worlds", "notes", "timerMinutes", "timerMode", "timerState", "timerSound", "eventName", "eventDate", "pingHost", "photoSeconds", "photo0", "photo1", "photo2", "photo3", "photo4", "photo5", "fav0", "fav1", "fav2", "fav3", "meterColors", "meterLow", "meterMid", "meterHigh", "disableAlpha", "dailyItems", "dailyState", "characterFont", "wall0", "wall1", "wall2", "wall3", "wall4", "wall5", "pauseDos", NULL};
 static int writable_option(int i)
 {
-    return i < 7 || (i >= 13 && i < 30) || (i >= 44 && i <= 47);
+    return i < 7 || (i >= 13 && i < 30) || (i >= 44 && i <= 47) || !strcmp(optionKeys[i], "pauseDos");
 }
 static int save_options(char *s)
 {
@@ -238,7 +238,7 @@ static int save_options(char *s)
             if (atoi(stored) > 3600)
                 return 0;
         }
-        if (i == 44 && strcmp(stored, "0") && strcmp(stored, "1"))
+        if ((i == 44 || !strcmp(key, "pauseDos")) && strcmp(stored, "0") && strcmp(stored, "1"))
             return 0;
         if (i == 28)
         {
@@ -415,7 +415,7 @@ static int publish(void)
         quoted(f, optionKeys[i]);
         fputc(':', f);
         GetPrivateProfileStringA("Options", optionKeys[i],
-                                 i == 0 ? "C" : i == 1 ? "*" : i == 2 ? "digital24" : i == 5 ? "15" : i == 19 || i == 40 ||
+                                 !strcmp(optionKeys[i], "pauseDos") ? "1" : i == 0 ? "C" : i == 1 ? "*" : i == 2 ? "digital24" : i == 5 ? "15" : i == 19 || i == 40 ||
                                  i == 44 ? "0" : i == 41 ? "62D98B" : i == 42 ? "FFD166" : i == 43 ? "FF6262" : "", value, sizeof(value), ini);
         quoted(f, value);
     }
