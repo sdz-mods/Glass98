@@ -6,11 +6,86 @@
 #ifndef TARGET
 #define TARGET "C:\\Glass98"
 #endif
-static const char *files[] = {"G98SETUP.EXE", "GADGETCTL.EXE", "W98DATA.EXE", "GLASSCTL.EXE", "GLASSPRF.EXE", "RSRC16.EXE", "GLASS.HTM", "SETTINGS.HTM", "WALL.BMP", "WIDGETS.JS", "ADDONS.JS", "UTILITIES.JS", "THEMES.JS", "MANAGER.JS", "MANAGER.CSS", "PLACEMENT.JS", "DATA.JS", "RUNSTATE.JS", "EXTRA.JS", "RSS.JS", "PING.JS", "ACK.JS", "VERSION.TXT", "INSTALL.BAT", "REMOVE.BAT", "README.TXT", "LICENSE.TXT", "NOTICE.TXT", "WATCOM.TXT", NULL};
+#define CPU_DRIVER_KEY "System\\CurrentControlSet\\Services\\VxD\\G98CPU"
+static int driverRestart;
+static const char *files[] = {
+    "G98SETUP.EXE", "GADGETCTL.EXE", "W98DATA.EXE", "GLASSCTL.EXE", "GLASSPRF.EXE", "RSRC16.EXE",
+    "GLASS.HTM", "SETTINGS.HTM", "WALL.BMP", "WIDGETS.JS", "ADDONS.JS", "UTILITIES.JS", "THEMES.JS",
+    "MANAGER.JS", "MANAGER.CSS", "PLACEMENT.JS", "DATA.JS", "RUNSTATE.JS", "EXTRA.JS", "RSS.JS",
+    "PING.JS", "ACK.JS", "VERSION.TXT", "INSTALL.BAT", "REMOVE.BAT", "README.TXT", "LICENSE.TXT",
+    "NOTICE.TXT", "WATCOM.TXT", "VMDISP9X.TXT", "G98CPU.VXD", NULL
+};
 static int exists(const char *p)
 {
     DWORD a = GetFileAttributesA(p);
     return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+}
+static int choose_cpu(void)
+{
+    char previous[16];
+    UINT flags = MB_YESNOCANCEL | MB_ICONQUESTION;
+    int answer;
+    GetPrivateProfileStringA("CPU", "Method", "VxD", previous, sizeof(previous), TARGET "\\WIDGETS.INI");
+    if (!lstrcmpiA(previous, "Legacy"))
+        flags |= MB_DEFBUTTON2;
+    answer = MessageBoxA(NULL,
+        "Use the recommended VxD CPU meter?\n\n"
+        "Yes: install the Glass98 CPU driver for better CPU readings when\n"
+        "programs change Windows' timer resolution.\n"
+        "Restart required; CPU usage is unavailable until the driver loads.\n\n"
+        "No: use the original Windows CPU counter without a driver.\n"
+        "Its readings can be incorrect when the timer resolution changes.\n\n"
+        "Run INSTALL.BAT again to change this choice.",
+        "Glass98 - CPU measurement", flags);
+    return answer == IDCANCEL ? -1 : answer == IDYES;
+}
+
+static int configure_cpu_driver(int enable)
+{
+    HKEY key;
+    LONG error;
+    DWORD disposition;
+    BYTE start = 0;
+    if (!enable)
+    {
+        error = RegDeleteKeyA(HKEY_LOCAL_MACHINE, CPU_DRIVER_KEY);
+        if (error == ERROR_FILE_NOT_FOUND)
+            return 1;
+        if (!error)
+        {
+            driverRestart = 1;
+            error = RegFlushKey(HKEY_LOCAL_MACHINE);
+        }
+    }
+    else
+    {
+        error = RegCreateKeyExA(HKEY_LOCAL_MACHINE, CPU_DRIVER_KEY, 0, NULL, 0,
+                               KEY_ALL_ACCESS, NULL, &key, &disposition);
+        if (!error)
+        {
+            error = RegSetValueExA(key, "StaticVxD", 0, REG_SZ,
+                                  (const BYTE *)TARGET "\\G98CPU.VXD", sizeof(TARGET "\\G98CPU.VXD"));
+            if (!error)
+                error = RegSetValueExA(key, "Start", 0, REG_BINARY, &start, sizeof(start));
+            if (!error)
+                error = RegFlushKey(key);
+            RegCloseKey(key);
+            driverRestart = 1;
+        }
+    }
+    if (error)
+        printf("Could not configure CPU driver (error %ld).\n", error);
+    return error == ERROR_SUCCESS;
+}
+
+static void restart_notice(void)
+{
+    if (driverRestart)
+    {
+        puts("Restart Windows to finish the CPU driver change.");
+        MessageBoxA(NULL, "Restart Windows to finish the CPU driver change.\n\n"
+                    "Save your work and restart when ready.", "Glass98", MB_OK | MB_ICONINFORMATION);
+    }
 }
 static int run(const char *dir, const char *file, const char *args)
 {
@@ -177,7 +252,7 @@ int main(int argc, char **argv)
     HANDLE lock;
     OSVERSIONINFOA os;
     DWORD length;
-    int i, install, catalog = 0, result = 1, staged = 0;
+    int i, install, catalog = 0, cpuVxd = 0, result = 1, staged = 0;
     (void)argc;
     (void)argv;
     memset(&os, 0, sizeof(os));
@@ -233,9 +308,18 @@ int main(int argc, char **argv)
     {
         if (!stop())
             goto done;
+        if (!configure_cpu_driver(0))
+            goto done;
         if (!remove_files())
             goto done;
         puts("Glass98 removed. REMOVE.BAT and all INI files retained in " TARGET ".");
+        result = 0;
+        goto done;
+    }
+    cpuVxd = choose_cpu();
+    if (cpuVxd < 0)
+    {
+        puts("Installation cancelled. No changes made.");
         result = 0;
         goto done;
     }
@@ -251,6 +335,8 @@ int main(int argc, char **argv)
     staged = 1;
     for (i = 0; files[i]; i++)
     {
+        if (!cpuVxd && !lstrcmpiA(files[i], "G98CPU.VXD"))
+            continue;
         if (strlen(source) + strlen(files[i]) + 2 >= MAX_PATH)
             goto done;
         sprintf(from, "%s\\%s", source, files[i]);
@@ -275,6 +361,8 @@ int main(int argc, char **argv)
         goto done;
     for (i = 0; files[i]; i++)
     {
+        if (!cpuVxd && !lstrcmpiA(files[i], "G98CPU.VXD"))
+            continue;
         sprintf(from, "%s\\%s", stage, files[i]);
         sprintf(to, TARGET "\\%s", files[i]);
         if (exists(to))
@@ -286,6 +374,16 @@ int main(int argc, char **argv)
         }
         SetFileAttributesA(to, FILE_ATTRIBUTE_NORMAL);
     }
+    if (!configure_cpu_driver(cpuVxd))
+        goto done;
+    if (!WritePrivateProfileStringA("CPU", "Method", cpuVxd ? "VxD" : "Legacy", TARGET "\\WIDGETS.INI"))
+    {
+        puts("Could not save the CPU measurement method.");
+        goto done;
+    }
+    WritePrivateProfileStringA(NULL, NULL, NULL, TARGET "\\WIDGETS.INI");
+    if (!cpuVxd && exists(TARGET "\\G98CPU.VXD") && !DeleteFileA(TARGET "\\G98CPU.VXD"))
+        puts("The unused G98CPU.VXD file can be deleted after restarting Windows.");
     if (catalog && !install_catalog(source))
     {
         puts("Could not install the optional CD database. Check free disk space and retry, or choose No.");
@@ -304,6 +402,7 @@ int main(int argc, char **argv)
     puts("Glass98 installed in " TARGET ". Use Manage widgets on the desktop.");
     result = 0;
 done:
+    restart_notice();
     if (staged)
     {
         for (i = 0; files[i]; i++)

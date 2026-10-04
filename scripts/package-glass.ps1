@@ -2,6 +2,7 @@ param([string]$CdDatabase)
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path $PSScriptRoot -Parent
 & (Join-Path $PSScriptRoot 'build.ps1')
+& (Join-Path $PSScriptRoot 'build-vxd.ps1')
 $output=Join-Path $projectRoot 'build'
 Push-Location $output
 try {
@@ -63,6 +64,8 @@ foreach($name in @('INSTALL.BAT','REMOVE.BAT','README.TXT')){
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination (Join-Path $package 'LICENSE.TXT') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'NOTICE.TXT') -Destination $package -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'licenses\WATCOM.TXT') -Destination $package -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'licenses\VMDISP9X.TXT') -Destination $package -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'build\vxd\g98cpu.vxd') -Destination (Join-Path $package 'G98CPU.VXD') -Force
 if ($CdDatabase) {
     $catalogStats = Get-Content -LiteralPath ([IO.Path]::ChangeExtension($CdDatabase, '.json')) -Raw | ConvertFrom-Json
     if ((Get-FileHash -LiteralPath $CdDatabase -Algorithm SHA256).Hash -ne $catalogStats.sha256) { throw 'CD catalog does not match its build manifest' }

@@ -79,7 +79,8 @@ int main(int argc, char **argv)
         return 0;
     }
     telemetry_init(&state);
-    printf("Start: success=%d error=%ld\n", state.started, state.lastError);
+    printf("Start: source=%s ready=%d error=%ld\n", state.useVxd ? "VxD" : "Legacy",
+           state.useVxd ? state.cpuBaseline : state.started, state.lastError);
     for (i = 0; i < 12; i++)
     {
         if (load)

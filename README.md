@@ -58,6 +58,15 @@ system statistics through Windows APIs. It writes local JavaScript data files,
 including `DATA.JS` and `EXTRA.JS`, in `C:\Glass98`. Collection stops for data
 that no enabled widget needs.
 
+For CPU usage, setup offers the recommended `G98CPU.VXD` driver or the original
+Windows counter. The driver reads scheduler timing on demand and gives better
+readings when programs change Windows' timer resolution. It does not
+change the timer resolution or run background polling. The original counter
+needs no driver, but can report inflated or otherwise incorrect CPU usage.
+Both methods stop sampling when CPU data is not needed or fullscreen DOS
+pausing is active. The VxD stays loaded until Windows shuts down, but does no
+work while it is not being queried.
+
 The desktop is an HTML page displayed by Active Desktop using IE6's rendering
 engine. Its JavaScript periodically reads those files and updates the widgets
 at their configured refresh intervals; CSS controls their appearance. Native
@@ -98,6 +107,10 @@ use fewer widgets and increase refresh intervals to reduce the load.
 
 1. Extract the complete `Glass98.zip` package to a folder, including on removable media.
 2. Close the widget manager, then run `INSTALL.BAT` from the extracted folder.
+   Choose **Yes** for the recommended VxD CPU meter, or **No** for the original
+   driver-free method. Setup remembers this choice for updates. Restart Windows
+   when prompted; with the VxD selected, CPU usage is unavailable until it loads.
+   Run the installer again to switch methods.
 3. Setup copies the application to `C:\Glass98`, registers it and starts the helpers.
 4. Open **Manage widgets** at the bottom-right of the desktop.
 
@@ -108,6 +121,7 @@ installations reuse the current Windows wallpaper, falling back to a bundled
 
 Run `C:\Glass98\REMOVE.BAT` to uninstall. It restores the saved desktop wallpaper,
 removes the program files and retains `REMOVE.BAT` and the INI settings files.
+If the CPU driver was installed, restart Windows to finish unloading it.
 
 See the [package manual](packaging/glass/README.TXT) for detailed controls.
 

@@ -50,6 +50,7 @@ python scripts/test-placement.py
 .\scripts\test-layouts.ps1
 .\scripts\test-cpuname.ps1
 .\scripts\test-frequency.ps1
+.\scripts\test-cpumeter.ps1
 .\scripts\test-autotheme.ps1
 .\scripts\test-cdshutdown.ps1
 .\scripts\test-desktop-state.ps1
@@ -97,3 +98,33 @@ Desktop state checks: run `scripts/test-desktop-state.ps1` to test CPU-frequency
 cache validation and scheme command parsing without changing host appearance.
 On a Windows 98 test machine, `test-winschemes.exe --exercise` additionally
 applies a native Appearance scheme and restores the previous named scheme.
+
+## CPU-counter VxD
+
+`./scripts/build-vxd.ps1` builds a standalone Windows 98 test package in
+`build/cpu-prototype`. The normal package build also builds and includes the
+driver, offered as an optional component by setup.
+Follow [the test instructions](../src/vxd/README.txt) for installation and use.
+The test package includes `CPUCHECK` for controlled load/timer tests, `CPUSETUP`
+for a standalone test installation, and `CPUDIAG` for read-only diagnosis of
+an installed Glass98 copy. These utilities are not in the release package.
+
+The driver uses Open Watcom's `win_vxd dynamic` LE target with a DDB exported
+at ordinal 1. It has no CRT, imports no Win32 APIs, and uses resident code/data.
+The build applies vmdisp9x's `fixlink -vxd32`, enables LE internal relocations,
+and corrects Watcom's DDB export to a 32-bit entry. The resulting image is
+registered as a boot-loaded VxD; the client opens the resident `G98CPU` device.
+The driver uses `UNDEFINED_DEVICE_ID`: clients open it by name, and it exports
+no numeric services. The build checks this to prevent conflicts with other VxDs.
+
+The LE recipe was adapted from VOPL3. `src/vxd/include/vmm.h` and
+`scripts/fixlink/fixlink.c` originate from
+[JHRobotics/vmdisp9x](https://github.com/JHRobotics/vmdisp9x); their copyright
+and license notices are retained. No VOPL3 audio implementation is included.
+
+The installer records `[CPU] Method=VxD` or `Method=Legacy` in `WIDGETS.INI`.
+VxD mode does not fall back to the registry counter if the driver is unavailable.
+Telemetry closes its device handle when collection stops and takes a fresh
+baseline when collection resumes, including after fullscreen DOS sessions.
+`scripts/test-cpumeter.c` tests load calculations, protocol validation, counter
+rollovers and stale-baseline rejection; run it with `scripts/test-cpumeter.ps1`.

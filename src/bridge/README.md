@@ -41,8 +41,20 @@ family, model, stepping, OS processor count, frequency in MHz and frequency kind
 (1: base, 2: startup estimate, 3: TSC reference rate). The desktop displays
 physical-memory usage, not the separate Windows memory-load value.
 
-CPU usage comes from the Win9x system counter without extra averaging. CPUID
-is guarded by an EFLAGS ID-bit test. Processor identification uses the brand
+CPU usage follows the installer's choice in `[CPU] Method` in `WIDGETS.INI`:
+`VxD` opens the resident `G98CPU` device and calculates busy time from VMM
+system-thread time and VTD elapsed time; `Legacy` reads the Win9x system
+counter without extra averaging. VxD mode avoids the registry counter's
+incorrect readings after multimedia timer-resolution changes. The driver
+does not change timer resolution, install hooks or poll in the background.
+
+If the selected driver cannot be opened or returns invalid data, CPU usage
+is unavailable (-1); the collector does not silently switch to the legacy
+counter. This also applies before the first restart after driver installation.
+Stopping collection closes the device handle. Resuming takes a fresh baseline;
+invalid intervals and long gaps are discarded, and counter wraparound is handled.
+
+CPUID is guarded by an EFLAGS ID-bit test. Processor identification uses the brand
 string when available, with vendor/signature and cache-based fallbacks.
 
 Snapshot strings escape JavaScript metacharacters. Core snapshot strings also

@@ -11,6 +11,20 @@ INSTALL / UPDATE
    are required. You can remove the source media after installation.
 3. Open Manage widgets at the bottom-right corner of the desktop.
 
+CPU MEASUREMENT
+Setup asks whether to use the recommended VxD CPU meter. Choose Yes for better
+CPU readings when programs change the Windows timer
+resolution. G98CPU.VXD reads scheduler timing on demand; it does not change
+the timer resolution or perform background polling. A restart is required.
+CPU usage is unavailable until the selected driver loads.
+
+Choose No to use the original Windows CPU counter without a driver. That
+counter can report incorrect CPU usage after timer-resolution changes.
+Updates remember your selection. Run INSTALL.BAT again to change methods.
+Switching back to the original counter takes effect immediately; restart to
+unload a previously installed driver. Removal also unregisters the driver
+and asks for a restart. Other statistics work with either CPU method.
+
 To upgrade, run INSTALL.BAT from the NEW package. No manual removal or file
 copy is needed. Existing WIDGETS.INI settings are retained where valid; the
 previous file is backed up as WIDGETS.BAK.INI before changes.

@@ -1,9 +1,13 @@
 #ifndef W98_TELEMETRY_H
 #define W98_TELEMETRY_H
 #include <windows.h>
+#include "../vxd/g98cpu.h"
 typedef struct
 {
     BOOL started, sampled;
+    BOOL useVxd, cpuBaseline;
+    HANDLE cpuDevice;
+    G98CPU_SAMPLE previousCpu;
     DWORD lastTick, startTick, counterType, counterSize;
     LONG cpu, lastError;
     MEMORYSTATUS memory;

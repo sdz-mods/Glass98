@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cpuname.h"
 #include "cpufreq.h"
+#include "cpumeter.h"
 #include <excpt.h>
 
 static int has_cpuid(void);
@@ -140,6 +141,35 @@ static int intel_l2(void)
     return size;
 }
 
+static BOOL use_cpu_driver(void)
+{
+    char path[MAX_PATH], method[16], *name;
+    DWORD length = GetModuleFileNameA(NULL, path, sizeof(path));
+    if (!length || length >= sizeof(path) || !(name = strrchr(path, '\\')) ||
+        (size_t)(name + 1 - path) + sizeof("WIDGETS.INI") > sizeof(path))
+        return FALSE;
+    strcpy(name + 1, "WIDGETS.INI");
+    GetPrivateProfileStringA("CPU", "Method", "Legacy", method, sizeof(method), path);
+    return !lstrcmpiA(method, "VxD");
+}
+
+static BOOL read_cpu_driver(TELEMETRY *s, G98CPU_SAMPLE *value)
+{
+    DWORD returned;
+    if (!DeviceIoControl(s->cpuDevice, G98CPU_READ, NULL, 0, value, sizeof(*value), &returned, NULL))
+    {
+        s->lastError = GetLastError();
+        return FALSE;
+    }
+    if (returned != sizeof(*value) || value->size != sizeof(*value) || value->version != G98CPU_VERSION)
+    {
+        s->lastError = ERROR_INVALID_DATA;
+        return FALSE;
+    }
+    s->lastError = ERROR_SUCCESS;
+    return TRUE;
+}
+
 void telemetry_init(TELEMETRY *s)
 {
     SYSTEM_INFO info;
@@ -147,6 +177,7 @@ void telemetry_init(TELEMETRY *s)
     char *p, brandText[49];
     const char *legacy;
     memset(s, 0, sizeof(*s));
+    s->cpuDevice = INVALID_HANDLE_VALUE;
     s->cpu = -1;
     strcpy(s->brand, "Unknown processor");
     strcpy(s->vendor, "N/A");
@@ -222,6 +253,17 @@ void telemetry_init(TELEMETRY *s)
         s->lastError = ERROR_NOT_SUPPORTED;
         return;
     }
+    s->useVxd = use_cpu_driver();
+    if (s->useVxd)
+    {
+        s->cpuDevice = CreateFileA("\\\\.\\G98CPU", 0, 0, NULL, 0, 0x10000000UL, NULL);
+        if (s->cpuDevice == INVALID_HANDLE_VALUE)
+            s->lastError = GetLastError();
+        else
+            s->cpuBaseline = read_cpu_driver(s, &s->previousCpu);
+        /* Do not silently substitute the inaccurate counter if VxD was selected. */
+        return;
+    }
     s->lastError = counter("PerfStats\\StartStat", &value, &type, &size);
     s->started = (s->lastError == ERROR_SUCCESS);
     s->startTick = GetTickCount();
@@ -229,6 +271,7 @@ void telemetry_init(TELEMETRY *s)
 void telemetry_sample(TELEMETRY *s)
 {
     DWORD tick = GetTickCount(), value;
+    G98CPU_SAMPLE current;
     if (s->sampled && tick - s->lastTick < 900)
         return;
     s->lastTick = tick;
@@ -236,6 +279,19 @@ void telemetry_sample(TELEMETRY *s)
     s->memory.dwLength = sizeof(MEMORYSTATUS);
     GlobalMemoryStatus(&s->memory);
     s->cpu = -1;
+    if (s->useVxd)
+    {
+        if (s->cpuDevice != INVALID_HANDLE_VALUE && read_cpu_driver(s, &current))
+        {
+            if (s->cpuBaseline)
+                s->cpu = cpu_meter(&s->previousCpu, &current);
+            s->previousCpu = current;
+            s->cpuBaseline = TRUE;
+        }
+        else
+            s->cpuBaseline = FALSE;
+        return;
+    }
     if (s->started && tick - s->startTick >= 1000)
     {
         s->lastError = counter("PerfStats\\StatData", &value, &s->counterType, &s->counterSize);
@@ -249,6 +305,12 @@ void telemetry_sample(TELEMETRY *s)
 void telemetry_stop(TELEMETRY *s)
 {
     DWORD value, type, size;
+    if (s->cpuDevice && s->cpuDevice != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(s->cpuDevice);
+        s->cpuDevice = INVALID_HANDLE_VALUE;
+    }
+    s->cpuBaseline = FALSE;
     if (s->started)
     {
         counter("PerfStats\\StopStat", &value, &type, &size);

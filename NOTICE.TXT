@@ -31,3 +31,11 @@ Optional CD metadata is derived from the MusicBrainz core database under
 CC0 1.0 Universal. The optional database package includes CDDATA.TXT and
 CC0.TXT with provenance and license information. MusicBrainz does not endorse
 Glass98. The database license is separate from the application source license.
+
+CPU DRIVER BUILD SUPPORT
+src/vxd/include/vmm.h: Copyright 2023 Jaroslav Hensl <emulator@emulace.cz>, MIT.
+The VMM header and scripts/fixlink/fixlink.c originate from JHRobotics/vmdisp9x:
+https://github.com/JHRobotics/vmdisp9x
+See licenses/VMDISP9X.TXT in source, VMDISP9X.TXT in the package, and the
+license notices in those source files.
+The fixlink utility uses the MIT No Attribution license and is a build tool.
