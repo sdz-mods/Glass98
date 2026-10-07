@@ -312,7 +312,7 @@ static int auto_place(const char *args)
     char config[4096], result[4096], *a[FIELDS], *p, text[32], tail;
     int index, x, y, w, crowded, i;
     if (sscanf(args, "%d/%d/%d/%d/%d%c", &index, &x, &y, &w, &crowded, &tail) != 5 || index < 0 || index >= PANELS ||
-            index == 5 || index == 21 || x < 1 || y < 1 || x > 32000 || y > 32000 || w < 240 || w > 600 || crowded < 0 ||
+            index == 21 || x < 1 || y < 1 || x > 32000 || y > 32000 || w < 240 || w > 600 || crowded < 0 ||
             crowded > 1)
         return 0;
     GetPrivateProfileStringA("Desktop", "Layout", defaults, config, sizeof(config), ini);

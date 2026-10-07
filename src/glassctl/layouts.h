@@ -109,7 +109,7 @@ static int layout_switch(int w, int h, int aw, int ah, int *sizes)
         on[i] = atoi(b[5 + i * 8]);
         x[i] = atoi(b[6 + i * 8]);
         y[i] = atoi(b[7 + i * 8]);
-        if (i == 5 || i == 21)
+        if (i == 21)
             on[i] = 0;
         if (initial && x[i] == 32000 && y[i] != 32000)
             x[i] = aw - width - 2;
@@ -119,7 +119,7 @@ static int layout_switch(int w, int h, int aw, int ah, int *sizes)
     if (reflow)
     {
         for (i = 0; i < PANELS; i++)
-            if (i != 5 && i != 21 && (on[i] || hidden[i] == '1'))
+            if (i != 21 && (on[i] || hidden[i] == '1'))
                 order[n++] = i;
         for (i = 1; i < n; i++)
         {

@@ -120,7 +120,17 @@ run("savedOptions.launch0='C:\\Games\\GAME.EXE';savedOptions.label0='My game';re
 assert.match(elements.flow10.innerHTML, /My game/);
 assert.doesNotMatch(elements.flow10.innerHTML, /<p>/);
 run('parse(defaults());panels[5].on=1;parse(serialize())');
-assert.equal(run('panels[5].on'), 0);
+assert.equal(run('panels[5].on'), 1);
+run("extraTime=(new Date()).getTime();processStatus=5;processes=[{name:'<busy>.exe',cpu:49.8,pid:42}];render(5)");
+assert.match(elements.flow5.innerHTML, /&lt;busy&gt;\.exe/);
+assert.match(elements.flow5.innerHTML, /49\.8%/);
+assert.equal((elements.flow5.innerHTML.match(/<tr /g) || []).length, 5);
+assert.match(elements.flow5.innerHTML, /height:100px/);
+run('processStatus=1;render(5)');
+assert.match(elements.flow5.innerHTML, /Requires Glass98 VxD/);
+assert.match(elements.flow5.innerHTML, /height:100px/);
+run('processStatus=0;render(5)');
+assert.match(elements.flow5.innerHTML, /Measuring CPU usage/);
 run('panels[0].on=1;el("h0").offsetHeight=25;el("flow0").offsetHeight=140;fitContent(0)');
 assert.equal(run('heights[0]'), 185);
 // Clock title overlays its main area; do not reserve a second header row.
@@ -179,7 +189,7 @@ assert.match(elements.flow9.innerHTML, /Track 3 of 12/);
 run("diskActivity={read:200,write:100};history=[[10,20,30,200,100]];render(12)");
 assert.match(elements.flow12.innerHTML, /FILE READ/);
 console.log(
-    'PASS: 26 widgets, legacy migration, timers, notes, world clocks, media, pictures, resources, CD tracks, file activity and existing regressions'
+    'PASS: 27 widgets, legacy migration, timers, notes, world clocks, media, pictures, resources, CD tracks, file activity and existing regressions'
 );
 run("savedOptions.meterColors='0';panels[0].accent='ABCDEF'");
 assert.equal(run('meterColor(100,0)'), 'ABCDEF');
@@ -304,7 +314,7 @@ run("awaiting='';inFlight='';optionQueue=[];el('widgetList').scrollTop=120;manag
 assert.equal(elements.target.value, '10');
 assert.equal(elements.widgetList.scrollTop, 120);
 assert.match(elements.widgetList.innerHTML, /Quick Launch/);
-assert.doesNotMatch(elements.widgetList.innerHTML, /managerChoose\((5|21)\)/);
+assert.doesNotMatch(elements.widgetList.innerHTML, /managerChoose\(21\)/);
 assert.match(elements.specific.innerHTML, /class="shortcutrow"/);
 assert.equal(elements.widgetEditor.scrollTop, 0);
 run("el('previewTint').filters={item:function(){return {opacity:64};}};managerPreview()");

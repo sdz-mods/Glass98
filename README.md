@@ -16,6 +16,7 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | System | CPU/RAM meters, CPU name and frequency, display adapter/mode, Windows version and uptime |
 | Disks | Used/free space for selected drives; adapts to missing drives and empty media |
 | Network | Selected interfaces, transfer rates/totals, IP address, gateway and hostname |
+| Processes | Top five running applications by CPU usage; requires the Glass98 VxD |
 | Performance | Scrolling CPU, RAM, network and file read/write graphs |
 | System resources | Free SYSTEM, USER and GDI resource pools |
 | Memory details | Physical RAM, Windows paging capacity, collector virtual space and largest free virtual block |
@@ -64,8 +65,10 @@ readings when programs change Windows' timer resolution. It does not
 change the timer resolution or run background polling. The original counter
 needs no driver, but can report inflated or otherwise incorrect CPU usage.
 Both methods stop sampling when CPU data is not needed or fullscreen DOS
-pausing is active. The VxD stays loaded until Windows shuts down, but does no
-work while it is not being queried.
+pausing is active. The Processes widget also uses the VxD to retain CPU time
+from threads that finish between refreshes. This accounting is active only
+while Processes is enabled and collection is not paused. The driver remains
+loaded until Windows shuts down.
 
 The desktop is an HTML page displayed by Active Desktop using IE6's rendering
 engine. Its JavaScript periodically reads those files and updates the widgets

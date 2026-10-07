@@ -162,7 +162,7 @@ function displayWatch(now) {
         displayBusy = true;
         if (!settingsView)
             for (j = 0; j < panels.length; j++)
-                if (j != 5 && j != 21) el('w' + j).style.visibility = 'hidden';
+                if (j != 21) el('w' + j).style.visibility = 'hidden';
         for (j = 0; j < panels.length; j++)
             if (panels[j].on && !measured[j]) ready = false;
         if (!settingsView && ready && !inFlight && !optionQueue.length && now - displaySince >= 500 && (!displaySent ||

@@ -1,9 +1,9 @@
 /* IE6-compatible desktop UI. No canvas, SVG, modern JS, ActiveX or HTML injection from telemetry. */
-var ids = ['system', 'disks', 'network', 'clock', 'calendar', 'reserved', 'battery', 'volume', 'winamp', 'cd', 'launch',
+var ids = ['system', 'disks', 'network', 'clock', 'calendar', 'processes', 'battery', 'volume', 'winamp', 'cd', 'launch',
     'rss', 'graphs', 'nettools', 'resources', 'sticky', 'timer', 'places', 'media', 'picture', 'event',
     'reservedVu', 'desktop', 'memory', 'calculator', 'characters', 'daily', 'clipboard'
 ];
-var titles = ['System', 'Disks', 'Network', 'Clock', 'Calendar', '', 'Battery', 'Volume', 'Winamp', 'Audio CD',
+var titles = ['System', 'Disks', 'Network', 'Clock', 'Calendar', 'Processes', 'Battery', 'Volume', 'Winamp', 'Audio CD',
     'Quick Launch', 'News', 'Performance', 'Network tools', 'System resources', 'Sticky notes', 'Timer', 'Places',
     'Removable media', 'Picture frame', 'Event countdown', '', 'Desktop controls', 'Memory details', 'Calculator',
     'Character map', 'Daily checklist', 'Clipboard'
@@ -97,7 +97,7 @@ function parse(s) {
     for (i = 0; i < ids.length; i++) {
         b = 5 + i * 8;
         panels[i] = {
-            on: (i == 5 || i == 21) ? 0 : num(a[b], 0, 1),
+            on: (i == 21) ? 0 : num(a[b], 0, 1),
             x: num(a[b + 1], 0, 32000),
             y: num(a[b + 2], 0, 32000),
             bg: a[b + 3],
@@ -172,7 +172,7 @@ function syncRenderingMode() {
 }
 
 function draw(i) {
-    if ((i == 5 || i == 21)) return;
+    if (i == 21) return;
     var p = panels[i],
         w = el('w' + i),
         t = el('t' + i),
@@ -523,6 +523,9 @@ function loadWidget(inspected) {
     if (i == 4) s =
         '<p>Reminders: one line per date, YYYY-MM-DD message. Displayed on that date; no alarm popup.</p><textarea id="reminders">' +
         esc(String(o.reminders || '').replace(/\\n/g, '\n')) + '</textarea>';
+    if (i == 5) s = '<p>Top five running applications by CPU usage. Requires the Glass98 VxD CPU meter; ' +
+        'choose it in INSTALL.BAT and restart Windows. Collection stops when this widget is disabled ' +
+        'and follows the fullscreen DOS pause setting.</p>';
     if (i == 9) {
         s = '<p>CD drive <select id="cdDrive"><option value="">Select...</option>';
         for (j = 0; j < drives.length; j++)
@@ -1024,6 +1027,27 @@ function render(i) {
     if (i == 4) {
         s = calendar();
     }
+    if (i == 5) {
+        s = '<div style="height:100px;overflow:hidden">';
+        if (!ok) s += detail('Process information unavailable');
+        else if (processStatus != 5) s += detail([
+            'Measuring CPU usage...', 'Requires Glass98 VxD CPU meter',
+            'Update Glass98 and restart Windows', 'Process CPU meter unavailable',
+            'Process monitoring capacity exceeded'
+        ][processStatus] || 'Process information unavailable');
+        else {
+            s += '<table cellspacing="0" cellpadding="0" style="width:100%;table-layout:fixed;font-size:11px">';
+            for (j = 0; j < 5; j++) {
+                p = processes[j];
+                s += '<tr style="height:20px"><td style="height:20px;line-height:20px;white-space:nowrap;overflow:hidden" title="' +
+                    esc(p ? p.name : '') + '">' + esc(p ? p.name : '') +
+                    '</td><td style="width:55px;text-align:right;white-space:nowrap">' +
+                    (p ? num(p.cpu * 10, 0, 1000) / 10 + '%' : '&nbsp;') + '</td></tr>';
+            }
+            s += '</table>';
+        }
+        s += '</div>';
+    }
     if (i == 6) {
         if (!ok) s = detail('Power status unavailable');
         else if (battery.flags == 128) s = detail('No battery detected');
@@ -1216,7 +1240,7 @@ var i, html = '',
 if (!parse(savedLayout)) parse(defaults());
 applied = savedLayout;
 for (i = 0; i < ids.length; i++) {
-    if ((i == 5 || i == 21)) continue;
+    if (i == 21) continue;
     html += '<div class="widget" id="w' + i + '"><div class="tint" id="t' + i + '"></div><div class="content" id="c' +
         i + '"><a href="#" class="handle" id="h' + i + '" onmousedown="beginDrag(' + i +
         ');return false" onclick="return false">' + titles[i] + '</a><div class="inside" id="b' + i +
@@ -1225,7 +1249,7 @@ for (i = 0; i < ids.length; i++) {
 }
 el('widgets').innerHTML = html;
 for (i = 0; i < titles.length; i++)
-    if ((i != 5 && i != 21)) el('target').options.add(new Option(titles[i], String(i)));
+    if (i != 21) el('target').options.add(new Option(titles[i], String(i)));
 drawAll();
 if (settingsView) {
     document.title = 'Glass98 - Settings';
@@ -1245,7 +1269,7 @@ if (settingsView) {
         .globalSeconds : 2;
     showTab('widget');
     var selectedWidget = /[?&]widget=(\d+)/.exec(location.search);
-    if (selectedWidget && Number(selectedWidget[1]) != 5 && Number(selectedWidget[1]) != 21) el('target').value =
+    if (selectedWidget && Number(selectedWidget[1]) != 21) el('target').value =
         String(num(selectedWidget[1], 0, ids.length - 1));
     loadWidget();
     managerInit();

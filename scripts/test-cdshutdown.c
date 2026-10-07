@@ -49,6 +49,11 @@ static UINT WINAPI test_drive(LPCSTR path)
 void details_collect(FILE *f, const char *p, int *e, int s) { (void)f; (void)p; (void)e; (void)s; }
 #endif
 void details_cd(FILE *f, const char *p, int o, int t, int n) { (void)f; (void)p; (void)o; (void)t; (void)n; }
+void processes_init(void) {}
+void processes_pause(int p) { (void)p; }
+void processes_update(const char *p, int e, int s) { (void)p; (void)e; (void)s; }
+void processes_write(FILE *f) { (void)f; }
+void processes_stop(void) {}
 int main(void)
 {
     char directory[MAX_PATH], config[4096] = "3|280|1|0|0", row[100], path[MAX_PATH];

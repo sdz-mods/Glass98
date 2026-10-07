@@ -128,3 +128,12 @@ Telemetry closes its device handle when collection stops and takes a fresh
 baseline when collection resumes, including after fullscreen DOS sessions.
 `scripts/test-cpumeter.c` tests load calculations, protocol validation, counter
 rollovers and stale-baseline rejection; run it with `scripts/test-cpumeter.ps1`.
+
+Run `scripts/test-processes.ps1` for bounded process accounting tests, including
+short-lived threads, handle/PID reuse, counter wraparound and capacity limits.
+It also builds `build/process-tests/PROCCHECK.EXE` for a Windows 98 VM. The probe
+requires the matching loaded VxD and exclusive process-accounting ownership:
+disable Processes in Glass98 before running it. Its optional arguments are
+timer period (0 = unchanged), sample count, interval in milliseconds, pause
+sample index and resume sample index. For example, `PROCCHECK 5 12 2000 4 8`
+checks a 5 ms timer period and pause/resume. The probe is not packaged for users.

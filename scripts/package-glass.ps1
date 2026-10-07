@@ -6,7 +6,7 @@ $projectRoot=Split-Path $PSScriptRoot -Parent
 $output=Join-Path $projectRoot 'build'
 Push-Location $output
 try {
-    & wcl386.exe -q -bt=nt -l=nt_win -3r -os -dW98_SUITE '-fe=w98data.exe' "$projectRoot\src\bridge\datawriter.c" "$projectRoot\src\bridge\telemetry.c" "$projectRoot\src\bridge\extras.c" "$projectRoot\src\bridge\addons.c" "$projectRoot\src\bridge\details.c" "$projectRoot\src\bridge\cdcatalog.c" advapi32.lib winmm.lib gdi32.lib shell32.lib ole32.lib
+    & wcl386.exe -q -bt=nt -l=nt_win -3r -os -dW98_SUITE '-fe=w98data.exe' "$projectRoot\src\bridge\datawriter.c" "$projectRoot\src\bridge\telemetry.c" "$projectRoot\src\bridge\extras.c" "$projectRoot\src\bridge\addons.c" "$projectRoot\src\bridge\details.c" "$projectRoot\src\bridge\cdcatalog.c" "$projectRoot\src\bridge\processes.c" advapi32.lib winmm.lib gdi32.lib shell32.lib ole32.lib
     if($LASTEXITCODE){throw 'suite telemetry build failed'}
     & wcl386.exe -q -bt=nt -l=nt -3r -os '-fe=glassctl.exe' "$projectRoot\src\glassctl\glassctl.c" ole32.lib advapi32.lib gdi32.lib
     if($LASTEXITCODE){throw 'glassctl build failed'}

@@ -59,7 +59,7 @@ function managerSelection() {
     if (stamp == managerListStamp) return;
     managerListStamp = stamp;
     for (j = 0; j < titles.length; j++)
-        if (j != 5 && j != 21) s += '<a href="#" class="' + (j == i ? 'selected' : '') +
+        if (j != 21) s += '<a href="#" class="' + (j == i ? 'selected' : '') +
             '" onclick="return managerChoose(' + j + ')"><span class="visibility">' + (panels[j].on ? 'On' :
                 hiddenForSpace(j) ? 'Hidden' : 'Off') + '</span>' + esc(titles[j]) + '</a>';
     var position = el('widgetList').scrollTop;

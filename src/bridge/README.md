@@ -70,3 +70,18 @@ its stop/wake events, CPU and file-activity counters are stopped, and the
 resource helper exits. CD ownership is retained without issuing a stop command.
 The desktop reads only `RUNSTATE.JS` while paused and resets graph history on
 resume. Existing API calls finish cooperatively; threads are not suspended.
+
+The Processes widget uses `processes.c` and `procmeter.h`. It enumerates process
+names and reads cumulative per-process VxD counters at its effective refresh
+interval, keeps only the top five live processes, and publishes them in
+`EXTRA.JS`. Percentages measure elapsed CPU time, not thread counts or a share
+of the busiest process. Completed worker threads remain included in their
+parent's counters. Process generations prevent PID reuse from inheriting CPU
+time. Disabling the widget or entering a fullscreen DOS pause closes its
+accounting handle; resume takes a fresh baseline. The fixed five-row
+view does not resize while collecting the first sample or showing an error.
+
+Process accounting requires the matching G98CPU.VXD and a restart after a driver
+update. The user-space startup mapping uses Windows 98 TDB layout fields, checks
+ownership and reads through ReadProcessMemory. It does not load another driver
+or depend on KernelEx. See `../vxd/g98cpu.h` for the versioned protocol.

@@ -23,7 +23,8 @@ counter can report incorrect CPU usage after timer-resolution changes.
 Updates remember your selection. Run INSTALL.BAT again to change methods.
 Switching back to the original counter takes effect immediately; restart to
 unload a previously installed driver. Removal also unregisters the driver
-and asks for a restart. Other statistics work with either CPU method.
+and asks for a restart. The Processes widget requires the VxD; other statistics
+work with either method.
 
 To upgrade, run INSTALL.BAT from the NEW package. No manual removal or file
 copy is needed. Existing WIDGETS.INI settings are retained where valid; the
@@ -251,3 +252,10 @@ LICENSE
 Glass98 project code is MIT licensed; see LICENSE.TXT.
 Open Watcom runtime portions retain their own license; see NOTICE.TXT and
 WATCOM.TXT. Source locations and acknowledgements are in NOTICE.TXT.
+
+PROCESSES
+Shows the top five running applications by CPU usage, including work done by
+threads that finish between refreshes. Choose the VxD option during installation
+and restart Windows after installing or updating the driver. Collection follows
+the widget refresh interval and stops when Processes is disabled or fullscreen
+DOS pausing is active. The first refresh establishes a baseline.

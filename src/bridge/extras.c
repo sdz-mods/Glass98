@@ -8,6 +8,7 @@
 #include "extras.h"
 #include "addons.h"
 #include "../widgets.h"
+#include "processes.h"
 void details_collect(FILE*, const char*, int*, int);
 void details_cd(FILE*, const char*, int, int, int);
 static char root[MAX_PATH], ini[MAX_PATH];
@@ -510,7 +511,7 @@ static int refresh_seconds(int panel, int *enabled)
             return 2;
         p++;
     }
-    *enabled = panel != 5 && atoi(p) != 0;
+    *enabled = atoi(p) != 0;
     for (i = 0; i < 7; i++)
     {
         p = strchr(p, '|');
@@ -534,6 +535,7 @@ int extra_core_enabled(void)
 void extra_pause(int paused)
 {
     InterlockedExchange(&collectorPaused, paused != 0);
+    processes_pause(paused);
     if (wakeEvent)
         SetEvent(wakeEvent);
 }
@@ -610,11 +612,13 @@ static DWORD WINAPI collect(void *unused)
         for (i = 0; i < GLASS98_PANELS; i++)
             refresh_seconds(i, &enabled[i]);
         enabled[21] = 0; /* Reserved layout slot; never enable a collector. */
+        interval = refresh_seconds(WIDGET_PROCESSES, &enabled[WIDGET_PROCESSES]);
+        processes_update(ini, enabled[WIDGET_PROCESSES], interval);
         GetPrivateProfileStringA("Desktop", "Layout", "", layout, sizeof(layout), ini);
         changed = strcmp(layout, lastLayout) != 0;
         if (changed)
             strcpy(lastLayout, layout);
-        active = enabled[0] || enabled[1] || enabled[2] || enabled[6] || enabled[7] || enabled[8] || enabled[9] ||
+        active = enabled[0] || enabled[1] || enabled[2] || enabled[5] || enabled[6] || enabled[7] || enabled[8] || enabled[9] ||
                  enabled[12] || enabled[13] || enabled[14] || enabled[17] || enabled[18] || enabled[22] || enabled[23] || enabled[27];
         GetPrivateProfileStringA("Options", "drives", "C", selection, sizeof(selection), ini);
         interval = refresh_seconds(1, &enabled[1]);
@@ -672,6 +676,7 @@ static DWORD WINAPI collect(void *unused)
                 else
                     fputs("var drives=[];\n", f);
                 devices(f);
+                processes_write(f);
                 addons_collect(f, root, ini, enabled);
                 details_collect(f, ini, enabled, refresh_seconds(WIDGET_MEMORY, &enabled[WIDGET_MEMORY]));
                 fprintf(f,
@@ -692,6 +697,7 @@ static DWORD WINAPI collect(void *unused)
     }
     while (waitResult != WAIT_OBJECT_0 && waitResult != WAIT_FAILED);
     addons_stop();
+    processes_stop();
     close_cd();
     DeleteFileA(destination);
     if (ipmodule)
@@ -702,6 +708,7 @@ void extra_start(const char *directory)
 {
     DWORD id;
     InitializeCriticalSection(&actionLock);
+    processes_init();
     queuedAction[0] = 0;
     shuttingDown = 0;
     lstrcpynA(root, directory, sizeof(root));
@@ -716,6 +723,7 @@ void extra_stop(void)
     if (shuttingDown)
         return;
     shuttingDown = 1;
+    processes_pause(1);
     if (stopEvent)
         SetEvent(stopEvent);
     if (worker)

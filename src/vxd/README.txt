@@ -47,8 +47,22 @@ and performs no background polling. Timer changes made by other applications
 are not altered. Counter reads are sequential, so small rounding/skew near
 zero is normal; the displayed percentage is bounded to 0..100.
 
-This measures total CPU usage, not per-process CPU usage. The driver is
-opened by name and exports no numeric services. It uses UNDEFINED_DEVICE_ID
+The Processes widget additionally enables bounded thread-lifecycle accounting.
+Thread_Init records ownership and Thread_Not_Executeable retains final CPU time,
+including workers that begin and finish between reads. No scheduler hooks are
+installed. Accounting stops when the owning client closes, disables the widget
+or pauses for fullscreen DOS. Resuming starts a fresh interval.
+
+The process protocol uses BEGIN (2), BIND (3), READ (4), STOP (5) and STATUS (6).
+BEGIN seeds live thread handles; the Win98 client validates TDB ownership links
+and supplies PID mappings through BIND. New threads acquire ownership at init.
+READ returns cumulative process counters, generation IDs and VTD elapsed time.
+Storage is bounded to 512 threads and 128 process groups (about 16.5 KiB). Capacity
+exhaustion reports unavailable data rather than an incomplete CPU ranking.
+Only one accounting client is supported; independent total-CPU readers remain
+compatible with the original READ (1) protocol.
+
+The driver is opened by name and exports no numeric services. It uses UNDEFINED_DEVICE_ID
 to avoid claiming a fixed device number used by another installed VxD.
 
 DIAGNOSING AN INSTALLED COPY
