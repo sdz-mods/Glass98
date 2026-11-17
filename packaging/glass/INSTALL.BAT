@@ -1,4 +1,5 @@
 @ECHO OFF
+IF "%OS%"=="Windows_NT" GOTO XP
 REM Win98 COMMAND.COM: %0\.. locates files beside this batch, including other drives.
 IF "%TEMP%"=="" GOTO NOTEMP
 COPY /Y %0\..\G98SETUP.EXE "%TEMP%\G98RUN.EXE" > NUL
@@ -15,4 +16,17 @@ ECHO Glass98 setup failed. Keep the package and INI files, and review the error 
 :DONE
 IF "%1"=="/NOPAUSE" GOTO END
 PAUSE
+GOTO END
+
+:XP
+IF "%TEMP%"=="" GOTO NOTEMP
+COPY /Y "%~dp0G98SETUP.EXE" "%TEMP%\G98RUN.EXE" > NUL
+IF ERRORLEVEL 1 GOTO FAILED
+"%TEMP%\G98RUN.EXE" install "%~f0"
+IF ERRORLEVEL 1 GOTO FAILED
+DEL "%TEMP%\G98RUN.EXE"
+IF "%1"=="/NOPAUSE" EXIT /B
+PAUSE
+EXIT /B
+
 :END

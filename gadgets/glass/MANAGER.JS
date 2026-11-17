@@ -1,6 +1,16 @@
 /* Manager-only layout. IE6 quirks mode uses border-box pixel dimensions. */
 var managerPage = 'widget',
-    managerListStamp = '';
+    managerListStamp = '',
+    managerScreen = '';
+
+function managerFitXP() {
+    if (typeof platformNT == 'undefined' || !platformNT) return;
+    var size = screen.availWidth + 'x' + screen.availHeight;
+    if (size == managerScreen) return;
+    managerScreen = size;
+    window.resizeTo(Math.min(840, screen.availWidth - 24), Math.min(700, screen.availHeight - 40));
+    window.moveTo(12, 12);
+}
 
 function managerResize() {
     if (!settingsView || desktopPaused) return;
@@ -51,6 +61,7 @@ function managerChoose(i) {
 
 function managerSelection() {
     if (desktopPaused) return;
+    managerFitXP();
     var i = Number(el('target').value) || 0,
         j, stamp = String(i),
         s = '';
@@ -59,7 +70,8 @@ function managerSelection() {
     if (stamp == managerListStamp) return;
     managerListStamp = stamp;
     for (j = 0; j < titles.length; j++)
-        if (j != 21) s += '<a href="#" class="' + (j == i ? 'selected' : '') +
+        if (j != 21 && !(j == 14 && typeof platformNT != 'undefined' && platformNT))
+            s += '<a href="#" class="' + (j == i ? 'selected' : '') +
             '" onclick="return managerChoose(' + j + ')"><span class="visibility">' + (panels[j].on ? 'On' :
                 hiddenForSpace(j) ? 'Hidden' : 'Off') + '</span>' + esc(titles[j]) + '</a>';
     var position = el('widgetList').scrollTop;

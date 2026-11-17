@@ -41,7 +41,7 @@ family, model, stepping, OS processor count, frequency in MHz and frequency kind
 (1: base, 2: startup estimate, 3: TSC reference rate). The desktop displays
 physical-memory usage, not the separate Windows memory-load value.
 
-CPU usage follows the installer's choice in `[CPU] Method` in `WIDGETS.INI`:
+On Win98, CPU usage follows the installer's choice in `[CPU] Method` in `WIDGETS.INI`:
 `VxD` opens the resident `G98CPU` device and calculates busy time from VMM
 system-thread time and VTD elapsed time; `Legacy` reads the Win9x system
 counter without extra averaging. VxD mode avoids the registry counter's
@@ -71,7 +71,7 @@ resource helper exits. CD ownership is retained without issuing a stop command.
 The desktop reads only `RUNSTATE.JS` while paused and resets graph history on
 resume. Existing API calls finish cooperatively; threads are not suspended.
 
-The Processes widget uses `processes.c` and `procmeter.h`. It enumerates process
+On Win98, the Processes widget uses `processes.c` and `procmeter.h`. It enumerates process
 names and reads cumulative per-process VxD counters at its effective refresh
 interval, keeps only the top five live processes, and publishes them in
 `EXTRA.JS`. Percentages measure elapsed CPU time, not thread counts or a share
@@ -81,7 +81,30 @@ time. Disabling the widget or entering a fullscreen DOS pause closes its
 accounting handle; resume takes a fresh baseline. The fixed five-row
 view does not resize while collecting the first sample or showing an error.
 
-Process accounting requires the matching G98CPU.VXD and a restart after a driver
+Win98 process accounting requires the matching G98CPU.VXD and a restart after a driver
 update. The user-space startup mapping uses Windows 98 TDB layout fields, checks
 ownership and reads through ReadProcessMemory. It does not load another driver
 or depend on KernelEx. See `../vxd/g98cpu.h` for the versioned protocol.
+
+On XP, `ntstats.h` resolves GetSystemTimes and GlobalMemoryStatusEx at runtime.
+CPU usage is the change in kernel-plus-user time minus idle time, divided by
+the change in kernel-plus-user time. Kernel time includes idle time. Windows
+aggregates these counters across all processors. Extended memory values remain
+64-bit until conversion to the JavaScript numeric representation.
+
+XP Processes uses GetProcessTimes, including finished-thread CPU time, for live
+processes that permit PROCESS_QUERY_INFORMATION access. PID and creation time
+identify a process across polls; newly observed processes establish a baseline.
+The denominator is the same all-processor elapsed time used by the System meter.
+Enumeration and handle opens happen only at the configured interval. Pause or
+disable frees the saved process samples. No VxD calls occur on XP.
+
+XP file activity uses PDH System/File Read Bytes/sec and File Write Bytes/sec.
+English counter IDs are resolved to localized names when opening a query. The
+query closes when disabled or paused. These rates include cached file I/O.
+Win16 resource pools do not apply to XP, so its System resources widget is omitted.
+
+XP fullscreen detection briefly attaches to the foreground console to read
+GetConsoleDisplayMode, then detaches. It does not attach to windowed applications
+or create a console. Attach/read failures preserve the last pause state until
+the foreground can be inspected again.

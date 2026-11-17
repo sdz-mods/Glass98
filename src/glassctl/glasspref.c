@@ -400,6 +400,7 @@ static int publish(void)
     for (p = settings; *p; p++)
         if (*p == '\\')
             *p = '/';
+    fprintf(f, "var platformNT=%d;\n", !(GetVersion() & 0x80000000UL));
     fputs("var savedLayout=", f);
     quoted(f, config);
     fputs(";var savedWallpaper=", f);
@@ -415,7 +416,8 @@ static int publish(void)
         quoted(f, optionKeys[i]);
         fputc(':', f);
         GetPrivateProfileStringA("Options", optionKeys[i],
-                                 !strcmp(optionKeys[i], "pauseDos") ? "1" : i == 0 ? "C" : i == 1 ? "*" : i == 2 ? "digital24" : i == 5 ? "15" : i == 19 || i == 40 ||
+                                 !strcmp(optionKeys[i], "pauseDos") ? "1" : i == 0 ? "C" : i == 1 ? "*" : i == 2 ? "digital24" : i == 5 ? "15" : i == 19
+                                 || i == 40 ||
                                  i == 44 ? "0" : i == 41 ? "62D98B" : i == 42 ? "FFD166" : i == 43 ? "FF6262" : "", value, sizeof(value), ini);
         quoted(f, value);
     }
@@ -561,6 +563,20 @@ int WINAPI WinMain(HINSTANCE h, HINSTANCE prev, LPSTR raw, int show)
         ok = registration(1);
     else if (!strcmp(decoded, "unregister"))
         ok = registration(0);
+    else if (!strncmp(decoded, "w98widgetsglass:manager/", 24))
+    {
+        char host[MAX_PATH], page[MAX_PATH + 40];
+        UINT length = GetSystemDirectoryA(host, sizeof(host));
+        if (!(GetVersion() & 0x80000000UL) && length && length < MAX_PATH - 12)
+        {
+            strcat(host, "\\mshta.exe");
+            slot = atoi(decoded + 24);
+            if (slot < 0 || slot >= GLASS98_PANELS)
+                slot = 0;
+            sprintf(page, "\"%s\\MANAGER.HTA?widget=%d\"", directory, slot);
+            ok = (UINT)ShellExecuteA(NULL, "open", host, page, directory, SW_SHOWNORMAL) > 32;
+        }
+    }
     else if (!strcmp(decoded, "publish"))
         ok = publish();
     else if (!strcmp(decoded, "prepare"))

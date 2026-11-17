@@ -1,4 +1,4 @@
-/* Win98 package installer. Runs from TEMP so installed executables can be replaced. */
+/* Shared Win98/XP package installer. Runs from TEMP so installed executables can be replaced. */
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,9 +8,11 @@
 #endif
 #define CPU_DRIVER_KEY "System\\CurrentControlSet\\Services\\VxD\\G98CPU"
 static int driverRestart;
-static const char *files[] = {
+static int nativeXP;
+static const char *files[] =
+{
     "G98SETUP.EXE", "GADGETCTL.EXE", "W98DATA.EXE", "GLASSCTL.EXE", "GLASSPRF.EXE", "RSRC16.EXE",
-    "GLASS.HTM", "SETTINGS.HTM", "WALL.BMP", "WIDGETS.JS", "ADDONS.JS", "UTILITIES.JS", "THEMES.JS",
+    "GLASS.HTM", "SETTINGS.HTM", "MANAGER.HTA", "WALL.BMP", "WIDGETS.JS", "ADDONS.JS", "UTILITIES.JS", "THEMES.JS",
     "MANAGER.JS", "MANAGER.CSS", "PLACEMENT.JS", "DATA.JS", "RUNSTATE.JS", "EXTRA.JS", "RSS.JS",
     "PING.JS", "ACK.JS", "VERSION.TXT", "INSTALL.BAT", "REMOVE.BAT", "README.TXT", "LICENSE.TXT",
     "NOTICE.TXT", "WATCOM.TXT", "VMDISP9X.TXT", "G98CPU.VXD", NULL
@@ -29,14 +31,14 @@ static int choose_cpu(void)
     if (!lstrcmpiA(previous, "Legacy"))
         flags |= MB_DEFBUTTON2;
     answer = MessageBoxA(NULL,
-        "Use the recommended VxD CPU meter?\n\n"
-        "Yes: install the Glass98 CPU driver for better CPU readings when\n"
-        "programs change Windows' timer resolution.\n"
-        "Restart required; CPU usage is unavailable until the driver loads.\n\n"
-        "No: use the original Windows CPU counter without a driver.\n"
-        "Its readings can be incorrect when the timer resolution changes.\n\n"
-        "Run INSTALL.BAT again to change this choice.",
-        "Glass98 - CPU measurement", flags);
+                         "Use the recommended VxD CPU meter?\n\n"
+                         "Yes: install the Glass98 CPU driver for better CPU readings when\n"
+                         "programs change Windows' timer resolution.\n"
+                         "Restart required; CPU usage is unavailable until the driver loads.\n\n"
+                         "No: use the original Windows CPU counter without a driver.\n"
+                         "Its readings can be incorrect when the timer resolution changes.\n\n"
+                         "Run INSTALL.BAT again to change this choice.",
+                         "Glass98 - CPU measurement", flags);
     return answer == IDCANCEL ? -1 : answer == IDYES;
 }
 
@@ -46,6 +48,8 @@ static int configure_cpu_driver(int enable)
     LONG error;
     DWORD disposition;
     BYTE start = 0;
+    if (nativeXP)
+        return 1;
     if (!enable)
     {
         error = RegDeleteKeyA(HKEY_LOCAL_MACHINE, CPU_DRIVER_KEY);
@@ -60,11 +64,11 @@ static int configure_cpu_driver(int enable)
     else
     {
         error = RegCreateKeyExA(HKEY_LOCAL_MACHINE, CPU_DRIVER_KEY, 0, NULL, 0,
-                               KEY_ALL_ACCESS, NULL, &key, &disposition);
+                                KEY_ALL_ACCESS, NULL, &key, &disposition);
         if (!error)
         {
             error = RegSetValueExA(key, "StaticVxD", 0, REG_SZ,
-                                  (const BYTE *)TARGET "\\G98CPU.VXD", sizeof(TARGET "\\G98CPU.VXD"));
+                                   (const BYTE *)TARGET "\\G98CPU.VXD", sizeof(TARGET "\\G98CPU.VXD"));
             if (!error)
                 error = RegSetValueExA(key, "Start", 0, REG_BINARY, &start, sizeof(start));
             if (!error)
@@ -258,9 +262,11 @@ int main(int argc, char **argv)
     memset(&os, 0, sizeof(os));
     os.dwOSVersionInfoSize = sizeof(os);
     GetVersionExA(&os);
-    if (os.dwPlatformId != VER_PLATFORM_WIN32_WINDOWS || os.dwMinorVersion != 10 || (os.dwBuildNumber & 65535) != 2222)
+    nativeXP = os.dwPlatformId == VER_PLATFORM_WIN32_NT && os.dwMajorVersion == 5 && os.dwMinorVersion == 1;
+    if (!nativeXP && (os.dwPlatformId != VER_PLATFORM_WIN32_WINDOWS || os.dwMinorVersion != 10 ||
+                      (os.dwBuildNumber & 65535) != 2222))
     {
-        puts("Glass98 setup requires Windows 98 SE.");
+        puts("Glass98 setup requires Windows 98 SE or 32-bit Windows XP.");
         return 2;
     }
     /* COMMAND.COM retains quotes in %0. Strip quotes only, preserving spaces. */
@@ -316,7 +322,7 @@ int main(int argc, char **argv)
         result = 0;
         goto done;
     }
-    cpuVxd = choose_cpu();
+    cpuVxd = nativeXP ? 0 : choose_cpu();
     if (cpuVxd < 0)
     {
         puts("Installation cancelled. No changes made.");
@@ -335,7 +341,9 @@ int main(int argc, char **argv)
     staged = 1;
     for (i = 0; files[i]; i++)
     {
-        if (!cpuVxd && !lstrcmpiA(files[i], "G98CPU.VXD"))
+        if ((!cpuVxd && !lstrcmpiA(files[i], "G98CPU.VXD")) ||
+                (nativeXP && !lstrcmpiA(files[i], "RSRC16.EXE")) ||
+                (!nativeXP && !lstrcmpiA(files[i], "MANAGER.HTA")))
             continue;
         if (strlen(source) + strlen(files[i]) + 2 >= MAX_PATH)
             goto done;
@@ -361,7 +369,9 @@ int main(int argc, char **argv)
         goto done;
     for (i = 0; files[i]; i++)
     {
-        if (!cpuVxd && !lstrcmpiA(files[i], "G98CPU.VXD"))
+        if ((!cpuVxd && !lstrcmpiA(files[i], "G98CPU.VXD")) ||
+                (nativeXP && !lstrcmpiA(files[i], "RSRC16.EXE")) ||
+                (!nativeXP && !lstrcmpiA(files[i], "MANAGER.HTA")))
             continue;
         sprintf(from, "%s\\%s", stage, files[i]);
         sprintf(to, TARGET "\\%s", files[i]);
@@ -376,7 +386,8 @@ int main(int argc, char **argv)
     }
     if (!configure_cpu_driver(cpuVxd))
         goto done;
-    if (!WritePrivateProfileStringA("CPU", "Method", cpuVxd ? "VxD" : "Legacy", TARGET "\\WIDGETS.INI"))
+    if (!WritePrivateProfileStringA("CPU", "Method", nativeXP ? "Native" : cpuVxd ? "VxD" : "Legacy",
+                                    TARGET "\\WIDGETS.INI"))
     {
         puts("Could not save the CPU measurement method.");
         goto done;

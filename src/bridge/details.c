@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "cdcatalog.h"
 #include "extras.h"
+#include "ntstats.h"
 #include "../widgets.h"
 #include "../winschemes.h"
 
@@ -104,7 +105,7 @@ static void desktop_schemes(FILE *f, int enabled)
 void details_collect(FILE *f, const char *ini, int *enabled, int seconds)
 {
     static DWORD sampled;
-    static MEMORYSTATUS memory;
+    static GLASS_MEMORY memory;
     static double largest = -1;
     BOOL saver = FALSE;
     char text[2049];
@@ -115,8 +116,7 @@ void details_collect(FILE *f, const char *ini, int *enabled, int seconds)
     (void)ini;
     if (enabled[WIDGET_MEMORY])
     {
-        memory.dwLength = sizeof(memory);
-        GlobalMemoryStatus(&memory);
+        glass_memory(&memory);
         if (!sampled || GetTickCount() - sampled >= (DWORD)(seconds < 10 ? 10 : seconds) * 1000)
         {
             largest = largest_block();

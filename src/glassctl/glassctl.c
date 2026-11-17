@@ -16,14 +16,15 @@ static int compatible(void)
     char version[80];
     DWORD n = sizeof(version), type;
     HDC dc;
-    int bits, major = 0, minor = 0, build = 0;
+    int bits, major = 0, minor = 0, build = 0, xp;
     memset(&os, 0, sizeof(os));
     os.dwOSVersionInfoSize = sizeof(os);
     GetVersionExA(&os);
-    if (os.dwPlatformId != VER_PLATFORM_WIN32_WINDOWS || os.dwMajorVersion != 4 || os.dwMinorVersion != 10 ||
-            (os.dwBuildNumber & 0xffff) != 2222)
+    xp = os.dwPlatformId == VER_PLATFORM_WIN32_NT && os.dwMajorVersion == 5 && os.dwMinorVersion == 1;
+    if (!xp && (os.dwPlatformId != VER_PLATFORM_WIN32_WINDOWS || os.dwMajorVersion != 4 || os.dwMinorVersion != 10 ||
+                (os.dwBuildNumber & 0xffff) != 2222))
     {
-        puts("Glass98 requires Windows 98 SE.");
+        puts("Glass98 requires Windows 98 SE or Windows XP (32-bit).");
         return 0;
     }
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Internet Explorer", 0, KEY_READ, &key))
@@ -43,7 +44,7 @@ static int compatible(void)
     sscanf(version, "%d.%d.%d", &major, &minor, &build);
     if (major < 6 || (major == 6 && build < 2800))
     {
-        puts("Glass requires Internet Explorer 6 SP1. Use the classic widget on IE5.");
+        puts("Glass98 requires Internet Explorer 6 SP1 or later.");
         return 0;
     }
     dc = GetDC(NULL);
@@ -54,7 +55,7 @@ static int compatible(void)
         puts("Select High Color (16-bit) or True Color (24/32-bit) first.");
         return 0;
     }
-    printf("Windows 98 SE; IE %s; display %d-bit.\n", version, bits);
+    printf("Windows %s; IE %s; display %d-bit.\n", xp ? "XP" : "98 SE", version, bits);
     return 1;
 }
 int main(int argc, char **argv)

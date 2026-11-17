@@ -97,7 +97,7 @@ function parse(s) {
     for (i = 0; i < ids.length; i++) {
         b = 5 + i * 8;
         panels[i] = {
-            on: (i == 21) ? 0 : num(a[b], 0, 1),
+            on: (i == 21 || (i == 14 && typeof platformNT != 'undefined' && platformNT)) ? 0 : num(a[b], 0, 1),
             x: num(a[b + 1], 0, 32000),
             y: num(a[b + 2], 0, 32000),
             bg: a[b + 3],
@@ -465,6 +465,10 @@ function safeClose() {
 }
 
 function openManager(index) {
+    if (typeof platformNT != 'undefined' && platformNT) {
+        el('commandSink').src = 'w98widgetsglass:manager/' + (index == null ? 0 : index);
+        return;
+    }
     window.open(settingsURL + (index == null ? '' : '?widget=' + index), 'W98WidgetsSettings', 'width=' + Math.min(840,
             screen.availWidth - 24) + ',height=' + Math.min(700, screen.availHeight - 40) +
         ',top=12,left=12,resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no');
@@ -523,8 +527,11 @@ function loadWidget(inspected) {
     if (i == 4) s =
         '<p>Reminders: one line per date, YYYY-MM-DD message. Displayed on that date; no alarm popup.</p><textarea id="reminders">' +
         esc(String(o.reminders || '').replace(/\\n/g, '\n')) + '</textarea>';
-    if (i == 5) s = '<p>Top five running applications by CPU usage. Requires the Glass98 VxD CPU meter; ' +
-        'choose it in INSTALL.BAT and restart Windows. Collection stops when this widget is disabled ' +
+    if (i == 5) s = '<p>Top five running applications by CPU usage. ' +
+        (typeof platformNT != 'undefined' && platformNT ?
+            'Uses native Windows CPU times, normalized across all processors. ' :
+            'Requires the Glass98 VxD CPU meter; choose it in INSTALL.BAT and restart Windows. ') +
+        'Collection stops when this widget is disabled ' +
         'and follows the fullscreen DOS pause setting.</p>';
     if (i == 9) {
         s = '<p>CD drive <select id="cdDrive"><option value="">Select...</option>';
@@ -1249,7 +1256,8 @@ for (i = 0; i < ids.length; i++) {
 }
 el('widgets').innerHTML = html;
 for (i = 0; i < titles.length; i++)
-    if (i != 21) el('target').options.add(new Option(titles[i], String(i)));
+    if (i != 21 && !(i == 14 && typeof platformNT != 'undefined' && platformNT))
+        el('target').options.add(new Option(titles[i], String(i)));
 drawAll();
 if (settingsView) {
     document.title = 'Glass98 - Settings';
@@ -1269,7 +1277,8 @@ if (settingsView) {
         .globalSeconds : 2;
     showTab('widget');
     var selectedWidget = /[?&]widget=(\d+)/.exec(location.search);
-    if (selectedWidget && Number(selectedWidget[1]) != 21) el('target').value =
+    if (selectedWidget && Number(selectedWidget[1]) != 21 &&
+        !(Number(selectedWidget[1]) == 14 && typeof platformNT != 'undefined' && platformNT)) el('target').value =
         String(num(selectedWidget[1], 0, ids.length - 1));
     loadWidget();
     managerInit();

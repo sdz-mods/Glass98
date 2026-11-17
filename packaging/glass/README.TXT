@@ -1,6 +1,7 @@
-Glass98 - A03
+Glass98 - A04
 
-Requires Windows 98 SE, Internet Explorer 6 SP1, High/True Color.
+Requires Windows 98 SE with IE6 SP1, or 32-bit Windows XP SP3 with IE6/IE7.
+High/True Color is required. XP x64 and later Windows versions are unsupported.
 The widgets are HTML Active Desktop wallpaper, behind normal windows.
 
 INSTALL / UPDATE
@@ -12,7 +13,7 @@ INSTALL / UPDATE
 3. Open Manage widgets at the bottom-right corner of the desktop.
 
 CPU MEASUREMENT
-Setup asks whether to use the recommended VxD CPU meter. Choose Yes for better
+On Win98, setup asks whether to use the recommended VxD CPU meter. Choose Yes for better
 CPU readings when programs change the Windows timer
 resolution. G98CPU.VXD reads scheduler timing on demand; it does not change
 the timer resolution or perform background polling. A restart is required.
@@ -23,7 +24,7 @@ counter can report incorrect CPU usage after timer-resolution changes.
 Updates remember your selection. Run INSTALL.BAT again to change methods.
 Switching back to the original counter takes effect immediately; restart to
 unload a previously installed driver. Removal also unregisters the driver
-and asks for a restart. The Processes widget requires the VxD; other statistics
+and asks for a restart. On Win98, the Processes widget requires the VxD; other statistics
 work with either method.
 
 To upgrade, run INSTALL.BAT from the NEW package. No manual removal or file
@@ -255,7 +256,22 @@ WATCOM.TXT. Source locations and acknowledgements are in NOTICE.TXT.
 
 PROCESSES
 Shows the top five running applications by CPU usage, including work done by
-threads that finish between refreshes. Choose the VxD option during installation
+threads that finish between refreshes. On Win98, choose the VxD option during installation
 and restart Windows after installing or updating the driver. Collection follows
 the widget refresh interval and stops when Processes is disabled or fullscreen
 DOS pausing is active. The first refresh establishes a baseline.
+
+Windows XP
+----------
+The same INSTALL.BAT detects XP and uses native CPU/process accounting.
+It does not install the VxD or the Win16 resource helper. CPU percentages
+are normalized across all processors. System resources is Win98-only and
+is omitted on XP. File activity uses Windows file-I/O counters, including
+cached I/O, rather than physical-disk utilization.
+
+Install using an administrator account. The single-user installation in
+C:\Glass98 must remain writable by the account running the widgets. The
+manager runs as a local HTML Application; no browser security changes are
+needed. Windows Appearance opens Display Properties if compatible classic
+schemes are unavailable. Fullscreen console sessions pause collection on XP,
+including DOS programs; windowed consoles do not.

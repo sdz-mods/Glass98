@@ -457,6 +457,8 @@ function utilityRender(i, ok) {
             s += section('WINDOWS APPEARANCE', chooseMarkup('windowsScheme', windowsSchemes,
                 windowsSchemeChoice, '') + '<div class="buttons">' +
                 localButton('Apply', 'applyWindowsScheme()') + button('Settings', 'util/display') + '</div>');
+        } else if (typeof platformNT != 'undefined' && platformNT) {
+            s += section('WINDOWS APPEARANCE', '<div class="buttons">' + button('Settings', 'util/display') + '</div>');
         }
     }
     if (i == 23) {

@@ -51,6 +51,8 @@ if ([regex]::Matches($settingsPage, $settingsPattern).Count -ne 1) {
 }
 $settings = $settingsPage -replace $settingsPattern, 'var settingsView = true;'
 [IO.File]::WriteAllText((Join-Path $package 'SETTINGS.HTM'),$settings,[Text.Encoding]::ASCII)
+$hta=$settings.Replace('<head>', '<head><hta:application id="glassManager" applicationname="Glass98" border="dialog" caption="yes" maximizebutton="yes" minimizebutton="yes" showintaskbar="yes" singleinstance="yes" sysmenu="yes" scroll="no" />')
+[IO.File]::WriteAllText((Join-Path $package 'MANAGER.HTA'),$hta,[Text.Encoding]::ASCII)
 [IO.File]::WriteAllText((Join-Path $package 'RUNSTATE.JS'),'var desktopPaused=0;',[Text.Encoding]::ASCII)
 [IO.File]::WriteAllText((Join-Path $package 'DATA.JS'),'var snapshot=null;var sampleTime=0;',[Text.Encoding]::ASCII)
 [IO.File]::WriteAllText((Join-Path $package 'EXTRA.JS'),'var extraTime=0;',[Text.Encoding]::ASCII)

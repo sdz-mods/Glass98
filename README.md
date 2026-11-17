@@ -1,6 +1,6 @@
 # Glass98
 
-**Desktop widgets for Windows 98 Second Edition.**
+**Desktop widgets for Windows 98 Second Edition and Windows XP.**
 
 Glass98 brings configurable, transparent HTML widgets to Active Desktop.
 They sit on the desktop alongside your icons, behind normal application windows.
@@ -16,9 +16,9 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | System | CPU/RAM meters, CPU name and frequency, display adapter/mode, Windows version and uptime |
 | Disks | Used/free space for selected drives; adapts to missing drives and empty media |
 | Network | Selected interfaces, transfer rates/totals, IP address, gateway and hostname |
-| Processes | Top five running applications by CPU usage; requires the Glass98 VxD |
+| Processes | Top five running applications by CPU usage; Win98 uses the Glass98 VxD, XP uses native counters |
 | Performance | Scrolling CPU, RAM, network and file read/write graphs |
-| System resources | Free SYSTEM, USER and GDI resource pools |
+| System resources | Free SYSTEM, USER and GDI resource pools (Win98 only) |
 | Memory details | Physical RAM, Windows paging capacity, collector virtual space and largest free virtual block |
 | Battery | Charge level, AC/charging state and driver-reported remaining runtime |
 | Clock | Digital clock, 12/24-hour modes and up to six fixed-offset world clocks |
@@ -33,7 +33,7 @@ They sit on the desktop alongside your icons, behind normal application windows.
 | Places | Four favorite folders and eight recent documents |
 | Removable media | Media status, open drive and CD eject |
 | Picture frame | Up to six local images with manual navigation or slideshow |
-| Desktop controls | Wallpaper switching, screensaver controls, Windows Appearance schemes and Glass98 themes |
+| Desktop controls | Wallpaper switching, screensaver controls, Windows Appearance settings and Glass98 themes |
 | Calculator | Arithmetic, unit conversion and unsigned hex/decimal/binary conversion |
 | Character map | Latin characters with click-to-copy and configurable font |
 | Daily checklist | Up to 24 tasks, with check marks resetting at local midnight |
@@ -59,7 +59,7 @@ system statistics through Windows APIs. It writes local JavaScript data files,
 including `DATA.JS` and `EXTRA.JS`, in `C:\Glass98`. Collection stops for data
 that no enabled widget needs.
 
-For CPU usage, setup offers the recommended `G98CPU.VXD` driver or the original
+On Windows 98, setup offers the recommended `G98CPU.VXD` driver or the original
 Windows counter. The driver reads scheduler timing on demand and gives better
 readings when programs change Windows' timer resolution. It does not
 change the timer resolution or run background polling. The original counter
@@ -70,11 +70,17 @@ from threads that finish between refreshes. This accounting is active only
 while Processes is enabled and collection is not paused. The driver remains
 loaded until Windows shuts down.
 
-The desktop is an HTML page displayed by Active Desktop using IE6's rendering
-engine. Its JavaScript periodically reads those files and updates the widgets
+On XP, CPU and process usage come from native Windows accounting, normalized
+across all processors. No Glass98 driver is installed. Both collectors stop
+when disabled or paused. Process rankings cover running processes whose CPU
+times Windows permits Glass98 to read.
+
+The desktop is an HTML page displayed by Active Desktop using Internet Explorer's
+rendering engine. Its JavaScript periodically reads those files and updates the widgets
 at their configured refresh intervals; CSS controls their appearance. Native
 helpers handle settings and actions such as volume changes and launching
-programs.
+programs. XP opens the widget manager as a local HTML Application (HTA);
+Win98 uses its browser window.
 
 When a fullscreen DOS session takes over the screen, Glass98 pauses telemetry
 collection, widget refreshes and scheduled feed requests. It resumes when you
@@ -88,8 +94,9 @@ and apply to keep widgets running during fullscreen DOS sessions. No restart is 
 
 ## Requirements
 
-- Windows 98 **Second Edition** (4.10.2222).
-- Internet Explorer **6 SP1** ([archived installer](https://archive.org/details/IE6SP1)).
+- Windows 98 **Second Edition** (4.10.2222) with Internet Explorer **6 SP1**
+  ([archived installer](https://archive.org/details/IE6SP1)), or **32-bit Windows XP SP3**
+  with Internet Explorer 6 or 7. XP x64 and later Windows versions are not supported.
 - High Color (16-bit) or True Color (24/32-bit) display mode.
 - A writable `C:\Glass98` installation directory.
 
@@ -101,7 +108,7 @@ No .NET or modern browser is required.
 Winamp is optional and only needed for its widget. Internet access is only
 needed for network-dependent features.
 
-Glass98 renders HTML, CSS and JavaScript through IE6, so a reasonably fast CPU
+Glass98 renders HTML, CSS and JavaScript through Internet Explorer, so a reasonably fast CPU
 is needed for a smooth experience, especially when dragging transparent widgets
 or displaying several live graphs. On slower systems, disable transparency,
 use fewer widgets and increase refresh intervals to reduce the load.
@@ -110,10 +117,12 @@ use fewer widgets and increase refresh intervals to reduce the load.
 
 1. Extract the complete `Glass98.zip` package to a folder, including on removable media.
 2. Close the widget manager, then run `INSTALL.BAT` from the extracted folder.
-   Choose **Yes** for the recommended VxD CPU meter, or **No** for the original
+   On Win98, choose **Yes** for the recommended VxD CPU meter, or **No** for the original
    driver-free method. Setup remembers this choice for updates. Restart Windows
    when prompted; with the VxD selected, CPU usage is unavailable until it loads.
-   Run the installer again to switch methods.
+   Run the installer again to switch methods. XP automatically uses native counters.
+   On XP, install using an administrator account; `C:\Glass98` must remain writable
+   by the account running the widgets. This is a single-user installation.
 3. Setup copies the application to `C:\Glass98`, registers it and starts the helpers.
 4. Open **Manage widgets** at the bottom-right of the desktop.
 
@@ -125,6 +134,11 @@ installations reuse the current Windows wallpaper, falling back to a bundled
 Run `C:\Glass98\REMOVE.BAT` to uninstall. It restores the saved desktop wallpaper,
 removes the program files and retains `REMOVE.BAT` and the INI settings files.
 If the CPU driver was installed, restart Windows to finish unloading it.
+
+On XP, the Win98-only System resources widget is omitted. Windows Appearance
+opens Display Properties when the installed shell does not expose compatible
+classic schemes. File activity uses Windows file-I/O counters, including cached
+I/O; it is not a physical-disk utilization percentage.
 
 See the [package manual](packaging/glass/README.TXT) for detailed controls.
 

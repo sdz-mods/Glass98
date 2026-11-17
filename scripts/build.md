@@ -27,15 +27,18 @@ spaces are supported. Output is `dist/Glass98` and `dist/Glass98.zip`.
 
 The release contains six native programs: GADGETCTL, W98DATA, GLASSCTL,
 GLASSPRF, G98SETUP and the Win16 RSRC16 resource helper. Five are PE executables
-with subsystem version 4.0; RSRC16 is a Windows NE executable. Runtime source
+with subsystem version 4.0; RSRC16 is a Windows NE executable. Setup installs RSRC16 and the optional VxD only on Win98, and MANAGER.HTA
+only on XP. The five PE binaries are shared by both systems. NT-only APIs and
+PDH are resolved at runtime so Win98 does not need those exports or libraries.
+Runtime source
 availability notices are embedded as resources and included in the package.
 
 `VERSION` is the release version source. Packaging substitutes it into both
-HTML pages and VERSION.TXT. Keep the version in the package manual and
+HTML pages, the XP manager HTA and VERSION.TXT. Keep the version in the package manual and
 NOTICE.TXT in step with it.
 
 Builds use the locally installed toolchain without downloading dependencies.
-Do not run the installer on the build host; it targets Windows 98 SE.
+Do not run the installer on the build host; it targets Windows 98 SE and 32-bit Windows XP.
 
 ## Automated checks
 
@@ -51,6 +54,8 @@ python scripts/test-placement.py
 .\scripts\test-cpuname.ps1
 .\scripts\test-frequency.ps1
 .\scripts\test-cpumeter.ps1
+.\scripts\test-processes.ps1
+.\scripts\test-ntstats.ps1
 .\scripts\test-autotheme.ps1
 .\scripts\test-cdshutdown.ps1
 .\scripts\test-desktop-state.ps1
@@ -59,6 +64,12 @@ python scripts/test-placement.py
 
 Native test executables and scratch files stay in `build`. Test helpers operate
 on isolated INI files rather than an installed desktop configuration.
+
+`test-ntstats.ps1` also builds `build/PROBENT.EXE` for an XP test machine.
+Run `PROBENT.EXE idle` and `PROBENT.EXE load`; each prints ten seconds of native
+CPU and process samples while requesting a 5 ms timer. `load` starts one busy
+thread, so expect approximately 100% on one processor or 50% on two processors.
+The probe refuses to run outside 32-bit XP.
 
 The `build.ps1` script also builds diagnostic utilities and the standalone
 `system.htm` page. Use `package-glass.ps1` for the Glass98 release package.

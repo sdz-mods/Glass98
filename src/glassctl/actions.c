@@ -214,7 +214,8 @@ int utility_action(const char *cmd, const char *ini, const char *root)
         return 1;
     }
     if (!strcmp(cmd, "network"))
-        return (UINT)ShellExecuteA(NULL, "open", "CONTROL.EXE", "NETCPL.CPL", NULL, SW_SHOWNORMAL) > 32;
+        return (UINT)ShellExecuteA(NULL, "open", "CONTROL.EXE", (GetVersion() & 0x80000000UL) ? "NETCPL.CPL" : "NCPA.CPL", NULL,
+                                   SW_SHOWNORMAL) > 32;
     CoInitialize(NULL);
     if (sscanf(cmd, "photo/%d%c", &slot, &tail) == 1 && slot >= 0 && slot < 6)
     {

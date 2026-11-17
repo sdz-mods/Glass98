@@ -81,7 +81,21 @@ static void cpu_frequency(TELEMETRY *s, DWORD maxLeaf, DWORD features, DWORD ext
             else
                 mhz = 0;
         }
-        if (!mhz && (features & 16))
+        if (!mhz && !(GetVersion() & 0x80000000UL))
+        {
+            HKEY key;
+            DWORD size = sizeof(mhz), type;
+            if (!RegOpenKeyExA(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_READ, &key))
+            {
+                if (!RegQueryValueExA(key, "~MHz", NULL, &type, (BYTE *)&mhz, &size) &&
+                        type == REG_DWORD && size == sizeof(mhz) && mhz >= 10 && mhz <= 20000)
+                    kind = 2;
+                else
+                    mhz = 0;
+                RegCloseKey(key);
+            }
+        }
+        if (!mhz && (GetVersion() & 0x80000000UL) && (features & 16))
         {
             if (extMax >= 0x80000007UL)
             {
@@ -146,7 +160,7 @@ static BOOL use_cpu_driver(void)
     char path[MAX_PATH], method[16], *name;
     DWORD length = GetModuleFileNameA(NULL, path, sizeof(path));
     if (!length || length >= sizeof(path) || !(name = strrchr(path, '\\')) ||
-        (size_t)(name + 1 - path) + sizeof("WIDGETS.INI") > sizeof(path))
+            (size_t)(name + 1 - path) + sizeof("WIDGETS.INI") > sizeof(path))
         return FALSE;
     strcpy(name + 1, "WIDGETS.INI");
     GetPrivateProfileStringA("CPU", "Method", "Legacy", method, sizeof(method), path);
@@ -250,7 +264,7 @@ void telemetry_init(TELEMETRY *s)
             *p = ' ';
     if (!(GetVersion() & 0x80000000UL))
     {
-        s->lastError = ERROR_NOT_SUPPORTED;
+        s->cpuBaseline = glass_system_times(&s->ntIdle, &s->ntTotal);
         return;
     }
     s->useVxd = use_cpu_driver();
@@ -276,9 +290,23 @@ void telemetry_sample(TELEMETRY *s)
         return;
     s->lastTick = tick;
     s->sampled = TRUE;
-    s->memory.dwLength = sizeof(MEMORYSTATUS);
-    GlobalMemoryStatus(&s->memory);
+    glass_memory(&s->memory);
     s->cpu = -1;
+    if (!(GetVersion() & 0x80000000UL))
+    {
+        double idle, total;
+        if (glass_system_times(&idle, &total))
+        {
+            if (s->cpuBaseline)
+                s->cpu = glass_cpu_percent(s->ntIdle, s->ntTotal, idle, total);
+            s->ntIdle = idle;
+            s->ntTotal = total;
+            s->cpuBaseline = TRUE;
+        }
+        else
+            s->cpuBaseline = FALSE;
+        return;
+    }
     if (s->useVxd)
     {
         if (s->cpuDevice != INVALID_HANDLE_VALUE && read_cpu_driver(s, &current))
@@ -321,7 +349,7 @@ void telemetry_stop(TELEMETRY *s)
 void telemetry_text(TELEMETRY *s, char *text)
 {
     telemetry_sample(s);
-    sprintf(text, "%ld|%lu|%lu|%lu|%lu|%lu|%lu|%lu|%s|%s|%lu|%lu|%lu|%lu|%lu|%lu",
+    sprintf(text, "%ld|%lu|%.0f|%.0f|%.0f|%.0f|%.0f|%.0f|%s|%s|%lu|%lu|%lu|%lu|%lu|%lu",
             s->cpu, s->memory.dwMemoryLoad, s->memory.dwTotalPhys / 1024, s->memory.dwAvailPhys / 1024,
             s->memory.dwTotalPageFile / 1024, s->memory.dwAvailPageFile / 1024,
             s->memory.dwTotalVirtual / 1024, s->memory.dwAvailVirtual / 1024,

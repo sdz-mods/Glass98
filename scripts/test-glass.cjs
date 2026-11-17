@@ -585,3 +585,17 @@ run('lastDesktopPoll=0;pollDesktop()');
 assert.match(elements.prefs.src, /^PREFS\.JS\?v=/);
 assert.match(fs.readFileSync(path.join(__dirname, '../gadgets/glass/WIDGETS.JS'), 'utf8'), /setInterval\(pollDesktop, 250\)/);
 console.log('PASS: 250 ms runtime checks preserve the one-second normal polling interval');
+
+// XP uses the native manager host and omits Win16 resource pools.
+ctx.platformNT = 1;
+vm.runInContext('openManager(5)', ctx);
+assert.equal(elements.commandSink.src, 'w98widgetsglass:manager/5');
+vm.runInContext("var xpLayout=defaults().split('|');xpLayout[5+14*8]='1';parse(xpLayout.join('|'));", ctx);
+assert.equal(ctx.panels[14].on, 0);
+let fitCalls = 0;
+ctx.window.resizeTo = (w, h) => { assert.ok(w <= ctx.screen.availWidth); assert.ok(h <= ctx.screen.availHeight); fitCalls++; };
+ctx.window.moveTo = () => {};
+vm.runInContext('managerFitXP(); managerFitXP();', ctx);
+assert.equal(fitCalls, 1);
+ctx.platformNT = 0;
+console.log('PASS: XP manager routing and Win16 widget exclusion');

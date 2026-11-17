@@ -1,4 +1,4 @@
-/* Optional Win9x collectors. Disabled widgets release their counters/helpers. */
+/* Optional platform collectors. Disabled widgets release their counters/helpers. */
 #include <windows.h>
 #include <shlobj.h>
 #include <stdio.h>
@@ -6,6 +6,7 @@
 #include <string.h>
 #include "extras.h"
 #include "addons.h"
+#include "ntdisk.h"
 static int diskStarted[2];
 static DWORD diskLast[2], diskTick, resourceRetry;
 static const char *diskNames[] = {"VFAT\\BReadsSec", "VFAT\\BWritesSec"};
@@ -28,6 +29,12 @@ static void disk_activity(FILE *f)
     DWORD tick = GetTickCount(), v[2], delta;
     double rate[2] = {-1, -1};
     int j, valid = 1;
+    if (!(GetVersion() & 0x80000000UL))
+    {
+        nt_disk_read(rate);
+        fprintf(f, "var diskActivity={read:%.0f,write:%.0f};\n", rate[0], rate[1]);
+        return;
+    }
     for (j = 0; j < 2; j++)
     {
         if (!diskStarted[j])
@@ -166,6 +173,7 @@ void addons_idle(const int *enabled)
     HWND w;
     if (!enabled[12])
     {
+        nt_disk_stop();
         for (j = 0; j < 2; j++)
             if (diskStarted[j])
             {

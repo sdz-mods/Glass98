@@ -94,9 +94,11 @@ int desktop_action(const char *cmd, const char *ini, const char *root)
         return WritePrivateProfileStringA("Desktop", "Wallpaper", path, ini);
     }
     if (!strcmp(cmd, "display"))
-        return (UINT)ShellExecuteA(NULL, "open", "CONTROL.EXE", "DESK.CPL,,2", NULL, SW_SHOWNORMAL) > 32;
+        return (UINT)ShellExecuteA(NULL, "open", "CONTROL.EXE", (GetVersion() & 0x80000000UL) ? "DESK.CPL,,2" : "DESK.CPL,,3",
+                                   NULL, SW_SHOWNORMAL) > 32;
     if (!strcmp(cmd, "saversettings"))
-        return (UINT)ShellExecuteA(NULL, "open", "CONTROL.EXE", "DESK.CPL,,1", NULL, SW_SHOWNORMAL) > 32;
+        return (UINT)ShellExecuteA(NULL, "open", "CONTROL.EXE", (GetVersion() & 0x80000000UL) ? "DESK.CPL,,1" : "DESK.CPL,,2",
+                                   NULL, SW_SHOWNORMAL) > 32;
     if (!strcmp(cmd, "saverstart"))
         return PostMessageA(GetDesktopWindow(), WM_SYSCOMMAND, SC_SCREENSAVE, 0);
     if (sscanf(cmd, "saver/%d%c", &slot, &tail) == 1 && (slot == 0 || slot == 1))

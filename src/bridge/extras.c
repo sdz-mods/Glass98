@@ -108,7 +108,7 @@ static void hardware(FILE *f)
     memset(&os, 0, sizeof(os));
     os.dwOSVersionInfoSize = sizeof(os);
     GetVersionExA(&os);
-    sprintf(version, "Windows %s %lu.%lu.%lu", os.dwMinorVersion == 10 ? "98 SE" : "9x", os.dwMajorVersion,
+    sprintf(version, "Windows %s %lu.%lu.%lu", os.dwPlatformId == VER_PLATFORM_WIN32_NT ? "XP" : "98 SE", os.dwMajorVersion,
             os.dwMinorVersion, os.dwBuildNumber & 65535);
     fputs("var hardware={", f);
     named(f, "gpu", gpu);
@@ -611,6 +611,8 @@ static DWORD WINAPI collect(void *unused)
         inspect = InterlockedExchange(&inspectRequested, 0);
         for (i = 0; i < GLASS98_PANELS; i++)
             refresh_seconds(i, &enabled[i]);
+        if (!(GetVersion() & 0x80000000UL))
+            enabled[14] = 0;
         enabled[21] = 0; /* Reserved layout slot; never enable a collector. */
         interval = refresh_seconds(WIDGET_PROCESSES, &enabled[WIDGET_PROCESSES]);
         processes_update(ini, enabled[WIDGET_PROCESSES], interval);

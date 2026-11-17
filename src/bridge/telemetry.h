@@ -2,6 +2,7 @@
 #define W98_TELEMETRY_H
 #include <windows.h>
 #include "../vxd/g98cpu.h"
+#include "ntstats.h"
 typedef struct
 {
     BOOL started, sampled;
@@ -10,7 +11,8 @@ typedef struct
     G98CPU_SAMPLE previousCpu;
     DWORD lastTick, startTick, counterType, counterSize;
     LONG cpu, lastError;
-    MEMORYSTATUS memory;
+    GLASS_MEMORY memory;
+    double ntIdle, ntTotal;
     char vendor[13], brand[49];
     DWORD family, model, stepping, processors;
     DWORD frequencyMHz, frequencyKind; /* 1 base, 2 startup estimate, 3 TSC reference; 4-6 cached equivalents */
